@@ -1,0 +1,241 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover">
+
+    <!-- favicons -->
+    <link rel="apple-touch-icon" href="">
+    <link rel="icon" href="">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="../estilo/bootstrap-4.1.3/css/bootstrap.min.css">
+
+    <!-- Material design icons CSS -->
+    <link rel="stylesheet" href="../estilo/materializeicon/material-icons.css">
+
+    <!-- aniamte CSS -->
+    <link rel="stylesheet" href="../estilo/animatecss/animate.css">
+
+    <!-- swiper carousel CSS -->
+    <link rel="stylesheet" href="../estilo/swiper/css/swiper.min.css">
+
+    <!-- daterange CSS -->
+    <link rel="stylesheet" href="../estilo/bootstrap-daterangepicker-master/daterangepicker.css">
+
+    <!-- footable CSS -->
+    <link rel="stylesheet" href="../estilo/footable-bootstrap/css/footable.bootstrap.min.css">
+
+    <!-- Bootstra tour CSS -->
+    <link rel="stylesheet" href="../estilo/bootstrap_tour/css/bootstrap-tour-standalone.css">
+
+
+    <!-- jvector map CSS -->
+    <link rel="stylesheet" href="../estilo/jquery-jvectormap/jquery-jvectormap-2.0.3.css">
+    <link rel="stylesheet" href="../estilo/EasyAutocomplete-1.3.5/easy-autocomplete.css">
+
+    <!-- app CSS -->
+    <link id="theme" rel="stylesheet" href="../css/dark-bluesidebar.css" type="text/css">
+    <!-- dataTable CSS -->
+    <link rel="stylesheet" href="../estilo/DataTables-1.10.18/css/dataTables.bootstrap4.min.css">
+    <title>Soluciones UN</title>
+</head>
+
+<body class="fixed-header sidebar-right-close">
+    <!-- page loader -->
+    <div class="loader justify-content-center pink-gradient">
+        <div class="align-self-center text-center">
+            <div class="logo-img-loader">
+
+            </div>
+            <h2 class="mt-3 font-weight-light">GoTRI</h2>
+            <p class="mt-2 text-white">Awesome things getting ready...</p>
+        </div>
+    </div>
+    <!-- page loader ends  -->
+
+    <div class="wrapper">
+     <!-- main header -->
+        <header class="main-header">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-auto pl-0">
+                        <button class="btn btn-info btn-icon" id="left-menu"><i class="material-icons">widgets</i></button>
+                        <a href="index.html" class="logo"><span class="text-hide-xs"><b>Soluciones </b>UN</span></a>
+                    </div>
+                    <div class="col text-center p-xs-0">
+                       &nbsp;
+                    </div>
+                    <div class="col-auto pr-0">
+                        <div class="dropdown text-hide-lg d-inline-block">                            
+                         
+                        </div>
+                        <div class="dropdown d-inline-block">
+                            <a class="btn btn-outline-info" id="btnCerrar" href="#">
+                                Cerrar Sesion
+                            </a>                            
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </header>
+        <!-- main header ends -->
+      <!-- Inicio Menu -->        
+        <div class="sidebar sidebar-left">
+            <ul id="allMenu" class="nav flex-column">
+               
+            </ul>
+        </div>
+     
+        <!-- content page -->
+        <div id="PnPrincipal">
+            <div class="row bg-light-opac">
+                <div class="container my-3 main-container">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h2 class="content-color-primary page-title" style="margin-left : 20px">Translados de Mercaderia</h2>
+                            <p class="content-color-secondary page-sub-title" style="margin-left : 20px">Realiza las Trasladosd de Mercaderias entre bodegas</p>
+                        </div>
+                        <div class="col-auto">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- content page title ends -->
+            <!-- content page -->
+            <div class="container mt-4 main-container ">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card mb-4 fullscreen">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12 row">
+                                        <div class="col-md-5">
+                                            <label for="bodegaorigen">Bodega Destino: <span class="text-danger">*</span></label>
+                                            <select class="custom-select" id="bodegaorigen" name="bodegaorigen">
+                                                <option value="0">Seleccione Una Opción</option>
+                                            </select>
+                                            <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
+                                            <div class="valid-feedback">¡Dato Correcto!</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 row">
+                                        <br />
+                                        <div class="col-md-5">
+                                            <input id="nomproducto" type="hidden" />
+                                            <input id="cantidadexistente" type="hidden" />
+                                            <input id="idproducto" type="hidden" />
+                                            <label for="producto">Producto:</label>
+                                            <input id="producto" type="text" class="form-control" placeholder="productos " autocomplete="off" />
+                                            <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
+                                            <div class="valid-feedback">¡Dato Correcto!</div>
+                                            <input id="codigoproducto" type="hidden" />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label for="cantidad">Cantidad:</label>
+                                            <input id="cantidad" type="number" class="form-control" placeholder="cantidad " autocomplete="off" />
+                                            <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
+                                            <div class="valid-feedback">¡Dato Correcto!</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="bodegadestino">Bodega Destino: <span class="text-danger">*</span></label>
+                                            <select class="custom-select" id="bodegadestino" name="bodegadestino">
+                                                <option value="0">Seleccione Una Opción</option>
+                                            </select>
+                                            <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
+                                            <div class="valid-feedback">¡Dato Correcto!</div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <br />
+                                            <button type="button" class="btn btn-info" id="bt-agregar"><i class="material-icons">local_grocery_store</i> AGREGAR </button>
+                                        </div>
+                                        <br />
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <br />
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="card mb-4 fullscreen">
+                                        <div class="card-header">
+                                            <div class="media">
+                                                <div class="media-body">
+                                                    <h4 class="content-color-primary mb-0"> LISTA DE  PRODUCTOS </h4>
+                                                </div>
+                                                <a href="javascript:void(0);" class="icon-circle icon-30 content-color-secondary fullscreenbtn">
+                                                    <i class="material-icons ">crop_free</i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="card-body pt-0">
+                                            <table class="table mb-0 table-bordered footable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Codigo</th>
+                                                        <th>Nombre del Producto</th>
+                                                        <th>Cantidad</th>
+                                                        <th>Bodega Origen</th>
+                                                        <th>Bodega Destino</th>
+                                                        <th data-breakpoints="xs sm" class="text-right">Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="tbody"></tbody>
+                                            </table>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <label for="observacion">Observacion:</label>
+                                    <textarea id="observacion" type="text" class="form-control" placeholder="Observacion... " autocomplete="off" ></textarea>
+                                    <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
+                                    <div class="valid-feedback">¡Dato Correcto!</div>
+                                    <input id="codigoproducto" type="hidden" />
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="card-footer">
+                                        <button class="btn btn-secondary"><i class="material-icons">close</i> CANCELAR</button>
+                                        <button class="btn btn-success float-right" id="btn-guardar"><i class="material-icons">local_mall</i> REGISTRAR</button>
+                                    </div>
+                                </div>
+                            </div>
+                                <!-- /.table-responsive -->
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- content page ends -->
+    </div>
+    <!-- modal for create form ends-->
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="../js/jquery-3.2.1.min.js" type="text/javascript"></script>
+    <script src="../estilo/bootstrap-4.1.3/js/bootstrap.min.js" type="text/javascript"></script>
+    <!-- jquery toast message file -->
+    <script src="../estilo/jquery-toast-plugin-master/dist/jquery.toast.min.js" type="text/javascript"></script>
+
+    <!-- Application main common jquery file -->
+    <script src="../js/main.js"></script>
+    <script src="../js/popper.min.js" type="text/javascript"></script>
+
+    <script src="../estilo/footable-bootstrap/js/footable.min.js"></script>
+
+    <!-- DataTable jquery file -->
+    <script src="../estilo/DataTables-1.10.18/js/jquery.dataTables.min.js"></script>
+    <script src="../estilo/DataTables-1.10.18/js/dataTables.bootstrap4.min.js"></script>
+    <script src="../estilo/bootstrap-4.1.3/js/bootstrap.min.js"></script>
+    <!-- page specific script -->
+    <script src="../estilo/EasyAutocomplete-1.3.5/jquery.easy-autocomplete.min.js"></script>
+    <script src="../js/traslados.js" type="text/javascript"></script>
+    <script src="../js/getmenu.js" type="text/javascript"></script>
+
+
+</body>
+
+</html>
