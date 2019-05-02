@@ -1,4 +1,5 @@
 ﻿Imports System.Data
+Imports System.Data.SqlClient
 Imports System.Web
 Imports System.Web.Services
 Imports System.Web.Services.Protocols
@@ -89,13 +90,31 @@ Public Class wstraslados
     Public Function Trasladar(ByVal usuario As String, ByVal observacion As String, ByVal traslado As List(Of trasladolist)) As String
 
         Dim result As String = ""
-        Dim sql As String = "INSERT INTO [dbo].[ENC_TRASLADO] ([Fecha],[Usuario],[Observaciones],[id_empresa]) VALUES (getdate(),'" & usuario & "','" & observacion & "',(select id_empresa from USUARIO where USUARIO = '" & usuario & "'))"
 
-        Dim id As Integer = manipular.EjecutaTransaccion_devolverid(sql)
 
-        If id = 0 Then
-            result = "Error | VERIQUE LA INSERCIÓN DE LA COMPRA"
-        Else
+        Dim conexion As SqlConnection
+        conexion = New SqlConnection()
+        conexion.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings("ConString").ConnectionString
+        conexion.Open()
+        Dim comando As New SqlCommand
+        Dim transaccion As SqlTransaction
+        transaccion = conexion.BeginTransaction
+        comando.Connection = conexion
+        comando.Transaction = transaccion
+
+        Try
+            Dim sql As String = "INSERT INTO [dbo].[ENC_TRASLADO] ([Fecha],[Usuario],[Observaciones],[id_empresa]) VALUES (getdate(),'" & usuario & "','" & observacion & "',(select id_empresa from USUARIO where USUARIO = '" & usuario & "'))"
+
+            'ejecuto primer comando sql
+            comando.CommandText = sql
+            comando.ExecuteNonQuery()
+
+
+            'OBTENEMOS ID DE LA FACTURA
+            comando.CommandText = "SELECT @@IDENTITY"
+            Dim id As Integer = comando.ExecuteScalar()
+
+
             For Each item As trasladolist In traslado
 
                 'INSERTA LOS DATOS 
@@ -115,18 +134,29 @@ Public Class wstraslados
                      "UPDATE [dbo].[Existencias] SET [Existencia_Deta_Art] = " & (ObtenerCantidadProducto(item.id, item.origen) - item.cantidad) & " WHERE [Id_Bod] = " & item.origen & " and   Id_Art = " & item.id & "; "
                 End If
 
-                If manipular.EjecutaTransaccion1(sql2) Then
-                    If manipular.EjecutaTransaccion1(sql3) Then
-                        result = "SUCCESS|COMPRA GENERADA EXITOSAMENTE"
-                    Else
-                        result = "ERROR|VERIQUE LA INSERCIÓN DE LOS EXISTENCIAS"
-                    End If
-                Else
-                    result = "ERROR|VERIQUE LA INSERCIÓN DE LOS PRODUCTOS"
-                    Exit For
-                End If
+
+                'ejecuto segundo comando sql
+                comando.CommandText = sql2
+                comando.ExecuteNonQuery()
+
+
+                'ejecuto tercer comando sql
+                comando.CommandText = sql3
+                comando.ExecuteNonQuery()
             Next
-        End If
+
+            transaccion.Commit()
+            result = "SUCCESS|COMPRA GENERADA EXITOSAMENTE"
+
+        Catch ex As Exception
+            'MsgBox(ex.Message.ToString)
+            transaccion.Rollback()
+            result = "ERROR|" & ex.Message
+        Finally
+            conexion.Close()
+        End Try
+
+
 
         Return result
     End Function

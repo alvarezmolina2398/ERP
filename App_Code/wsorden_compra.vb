@@ -1,4 +1,5 @@
 ﻿Imports System.Data
+Imports System.Data.SqlClient
 Imports System.IO
 Imports System.Web
 Imports System.Web.Services
@@ -8,9 +9,9 @@ Imports iTextSharp.text.pdf
 
 ' Para permitir que se llame a este servicio web desde un script, usando ASP.NET AJAX, quite la marca de comentario de la línea siguiente.
 <System.Web.Script.Services.ScriptService()>
-<WebService(Namespace:="http://tempuri.org/")> _
-<WebServiceBinding(ConformsTo:=WsiProfiles.BasicProfile1_1)> _
-<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+<WebService(Namespace:="http://tempuri.org/")>
+<WebServiceBinding(ConformsTo:=WsiProfiles.BasicProfile1_1)>
+<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Public Class wsorden_compra
     Inherits System.Web.Services.WebService
 
@@ -19,32 +20,52 @@ Public Class wsorden_compra
                             ByVal departamento As Integer, ByVal solicitante As Integer, ByVal tipoorden As Integer,
                             ByVal observacion As String, ByVal total As Double, ByVal usuario As String, ByVal listproductos As List(Of productos)) As String
 
-
-
         Dim result As String = ""
-        Dim sql As String = "INSERT INTO [dbo].[ENC_OR_COMPRA]([Usuario],[id_empresa],[Fecha],[Total_Factura],[Id_Proveedor],[observaciones],[moneda],[estatus],[id_suc],[estado],[departamento],[empleado],[tipo],[moneda_local]) " &
-        "VALUES ('" & usuario & "',(select top (1) id_empresa from USUARIO where USUARIO = '" & usuario & "'), getdate(), " & total & "," & proveedor & ", '" & observacion & "'," & moneda & ",1," & sucursal & ",1," & departamento & ", " & solicitante & "," & tipoorden & ",(SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & "))"
+        Dim conexion As SqlConnection
+        conexion = New SqlConnection()
+        conexion.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings("ConString").ConnectionString
+        conexion.Open()
+        Dim comando As New SqlCommand
+        Dim transaccion As SqlTransaction
+        transaccion = conexion.BeginTransaction
+        comando.Connection = conexion
+        comando.Transaction = transaccion
 
-        Dim id As Integer = manipular.EjecutaTransaccion_devolverid(sql)
 
-        If id = 0 Then
-            result = "Error | VERIQUE LA INSERCIÓN DE LA ORDEN DE COMPRA"
-        Else
+
+        Try
+            Dim sql As String = "INSERT INTO [dbo].[ENC_OR_COMPRA]([Usuario],[id_empresa],[Fecha],[Total_Factura],[Id_Proveedor],[observaciones],[moneda],[estatus],[id_suc],[estado],[departamento],[empleado],[tipo],[moneda_local]) " &
+            "VALUES ('" & usuario & "',(select top (1) id_empresa from USUARIO where USUARIO = '" & usuario & "'), getdate(), " & total & "," & proveedor & ", '" & observacion & "'," & moneda & ",1," & sucursal & ",1," & departamento & ", " & solicitante & "," & tipoorden & ",(SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & "))"
+
+
+            'ejecuto primer comando sql
+            comando.CommandText = sql
+            comando.ExecuteNonQuery()
+
+            'OBTENEMOS ID DE LA FACTURA
+            comando.CommandText = "SELECT @@IDENTITY"
+            Dim id As Integer = comando.ExecuteScalar()
+
             For Each item As productos In listproductos
 
                 'INSERTA LOS DATOS 
                 Dim sql2 As String = "INSERT INTO [dbo].[DET_OR_COMPRA] ([id_enc],[Cantidad_Articulo],[Precio_Unit_Articulo],[Sub_Total],[Id_Art],[id_suc],[moneda_local]) " &
-                    "VALUES (" & id & "," & item.cantidad & "," & item.Precio & "," & (item.Precio * item.cantidad) & "," & item.id & ", " & sucursal & ",(SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")) "
+                    "VALUES (" & id & "," & item.cantidad & "," & item.precio & "," & (item.precio * item.cantidad) & "," & item.id & ", " & sucursal & ",(SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")) "
 
 
-                If manipular.EjecutaTransaccion1(sql2) Then
-                    result = "SUCCESS|ORDEN DE COMPRA GENERADA EXITOSAMENTE|" & CrearPDF(id, sucursal, usuario, proveedor, observacion)
-                Else
-                    Exit For
-                    result = "ERROR|VERIQUE LA INSERCIÓN DE LOS PRODUCTOS"
-                End If
+                comando.CommandText = sql2
+                comando.ExecuteNonQuery()
+
             Next
-        End If
+            transaccion.Commit()
+            result = "SUCCESS|ORDEN DE COMPRA GENERADA EXITOSAMENTE|" & CrearPDF(id, sucursal, usuario, proveedor, observacion)
+        Catch ex As Exception
+            transaccion.Rollback()
+            result = "ERROR|" & ex.Message
+        Finally
+            conexion.Close()
+        End Try
+
 
         Return result
     End Function
@@ -56,22 +77,45 @@ Public Class wsorden_compra
                             ByVal observacion As String, ByVal total As Double, ByVal usuario As String, ByVal listproductos As List(Of productos), ByVal factura As String, ByVal serie As String, ByVal orden As String) As String
 
 
-        If Not orden = "" Then
-            manipular.EjecutaTransaccion1("UPDATE [dbo].[ENC_OR_COMPRA] SET  [estatus] = 0 WHERE id_enc  = " & orden)
-        Else
-            orden = "0"
-        End If
+
+        Dim conexion As SqlConnection
+        conexion = New SqlConnection()
+        conexion.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings("ConString").ConnectionString
+        conexion.Open()
+        Dim comando As New SqlCommand
+        Dim transaccion As SqlTransaction
+        transaccion = conexion.BeginTransaction
+        comando.Connection = conexion
+        comando.Transaction = transaccion
 
 
         Dim result As String = ""
-        Dim sql As String = "INSERT INTO [dbo].[enc_compra_exterior]([usuario],[fecha],[facturas],[total_fact],[moneda_local],[idsuc],[iddeplab],[idsolicitante],[moneda],[estado],[tipo],[observaciones],[facturan],[idproveedor],[id_enc_orden]) " &
-        "VALUES ('" & usuario & "', getdate(), '" & serie & "'," & total & ", (SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")," & sucursal & "," & departamento & "," & solicitante & "," & moneda & ", 1," & tipoorden & ",'" & observacion & "','" & factura & "'," & proveedor & "," & orden & ")"
 
-        Dim id As Integer = manipular.EjecutaTransaccion_devolverid(sql)
+        Try
 
-        If id = 0 Then
-            result = "Error | VERIQUE LA INSERCIÓN DE LA COMPRA"
-        Else
+            If Not orden = "" Then
+                Dim sql_update_orden As String = "UPDATE [dbo].[ENC_OR_COMPRA] SET  [estatus] = 0 WHERE id_enc  = " & orden
+                comando.CommandText = sql_update_orden
+                comando.ExecuteNonQuery()
+            Else
+                orden = "0"
+            End If
+
+
+
+            Dim sql As String = "INSERT INTO [dbo].[enc_compra_exterior]([usuario],[fecha],[facturas],[total_fact],[moneda_local],[idsuc],[iddeplab],[idsolicitante],[moneda],[estado],[tipo],[observaciones],[facturan],[idproveedor],[id_enc_orden]) " &
+            "VALUES ('" & usuario & "', getdate(), '" & serie & "'," & total & ", (SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")," & sucursal & "," & departamento & "," & solicitante & "," & moneda & ", 1," & tipoorden & ",'" & observacion & "','" & factura & "'," & proveedor & "," & orden & ")"
+
+
+            'ejecuto primer comando sql
+            comando.CommandText = sql
+            comando.ExecuteNonQuery()
+
+
+            'OBTENEMOS ID DE LA FACTURA
+            comando.CommandText = "SELECT @@IDENTITY"
+            Dim id As Integer = comando.ExecuteScalar()
+
             For Each item As productos In listproductos
 
                 'INSERTA LOS DATOS 
@@ -96,18 +140,27 @@ Public Class wsorden_compra
                     "UPDATE [dbo].[Articulo] SET [costo_art] = " & Math.Round((costofinal / nuevaExistencia), 2) & " WHERE id_art = " & item.id
                 End If
 
-                If manipular.EjecutaTransaccion1(sql2) Then
-                    If manipular.EjecutaTransaccion1(sql3) Then
-                        result = "SUCCESS|COMPRA GENERADA EXITOSAMENTE"
-                    Else
-                        result = "ERROR|VERIQUE LA INSERCIÓN DE LOS EXISTENCIAS"
-                    End If
-                Else
-                    result = "ERROR|VERIQUE LA INSERCIÓN DE LOS PRODUCTOS"
-                    Exit For
-                End If
+
+                'ejecuto segundo comando sql
+                comando.CommandText = sql2
+                comando.ExecuteNonQuery()
+
+
+                'ejecuto tercero comando sql
+                comando.CommandText = sql3
+                comando.ExecuteNonQuery()
+
             Next
-        End If
+
+            result = "SUCCESS|COMPRA GENERADA EXITOSAMENTE"
+            transaccion.Commit()
+
+        Catch ex As Exception
+            transaccion.Rollback()
+            result = "ERROR|" & ex.Message
+        Finally
+            conexion.Close()
+        End Try
 
         Return result
     End Function
@@ -124,60 +177,92 @@ Public Class wsorden_compra
 
         fechaingreso = fechaformat(2) & "-" & fechaformat(1) & "-" & fechaformat(0)
 
-
-        If Not orden = "" Then
-            manipular.EjecutaTransaccion1("UPDATE [dbo].[ENC_OR_COMPRA] SET  [estatus] = 0 WHERE id_enc  = " & orden)
-        End If
-
-
         Dim result As String = ""
-        Dim sql As String = "INSERT INTO [dbo].[enc_compra_exterior]([usuario],[fecha],[facturas],[total_fact],[moneda_local],[idsuc],[iddeplab],[idsolicitante],[moneda],[estado],[tipo],[observaciones],[facturan],[idproveedor],[fletee],[seguroe],[otrosge],[creditoe],[iva],[fletel],[agentel],[almacenajel],[arancelt],[tasac],[polizan],[fecha_ingreso],[id_enc_orden]) " &
-        "VALUES ('" & usuario & "', getdate(), '" & serie & "'," & total & ", (SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")," & sucursal & "," & departamento & "," & solicitante & "," & moneda & ", 1," & tipoorden & ",'" & observacion & "','" & factura & "'," & proveedor & "," & fletee & "," & seguroe &
-        ", " & otrosge & "," & creditoe & "," & iva & "," & fletel & "," & agentel & "," & almacenajel & "," & arancelt & "," & tasac & ",'" & polizan & "', '" & fechaingreso & "'," & orden & ")"
 
-        Dim id As Integer = manipular.EjecutaTransaccion_devolverid(sql)
 
-            If id = 0 Then
-                result = "Error | VERIQUE LA INSERCIÓN DE LA COMPRA"
+        Dim conexion As SqlConnection
+        conexion = New SqlConnection()
+        conexion.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings("ConString").ConnectionString
+        conexion.Open()
+
+
+        Dim comando As New SqlCommand
+        Dim transaccion As SqlTransaction
+        transaccion = conexion.BeginTransaction
+        comando.Connection = conexion
+        comando.Transaction = transaccion
+
+
+
+        Try
+            If Not orden = "" Then
+                Dim sql_update_orden As String = "UPDATE [dbo].[ENC_OR_COMPRA] SET  [estatus] = 0 WHERE id_enc  = " & orden
+                comando.CommandText = sql_update_orden
+                comando.ExecuteNonQuery()
             Else
-                For Each item As productos In listproductos
-
-                    'INSERTA LOS DATOS 
-                    Dim sql2 As String = "INSERT INTO [dbo].[DET_COMPRA_exterior]([id_enc_orcompra_ing],[id_art],[cantidad],[valor],[moneda_local],[subtotal],[idsuc],[arancel]) " &
-                    "VALUES (" & id & "," & item.id & "," & item.cantidad & "," & item.precio & ",(SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")," & (item.cantidad * item.precio) & "," & sucursal & "," & item.arancel & ") "
-
-                    Dim cantidad As Integer = ObtenerCantidadProducto(item.id)
-
-                    Dim sql3 = ""
-                    Dim sqlbodega = "(select Id_Bod from dbo.Bodegas  where id_suc =  " & sucursal & " and principal = 1)"
-                    If cantidad = 0 Then
-
-                        sql3 = "INSERT INTO [dbo].[Existencias]([Id_Bod],[Id_Art],[Existencia_Deta_Art]) VALUES(" & sqlbodega & ", " & item.id & "," & item.cantidad & "); " &
-                    "UPDATE [dbo].[Articulo] SET [costo_art] = " & Math.Round((item.precio * (1 + porcentaje))) & " WHERE id_art = " & item.id
-                    Else
-                        Dim precio As Double = ObtenerCostoActual(item.id)
-                        Dim preciocompra As Double = (item.cantidad * item.precio) * (1 + porcentaje)
-                        Dim costofinal As Double = (precio + preciocompra)
-                        Dim nuevaExistencia As Integer = (cantidad + item.cantidad)
-
-                        sql3 = "UPDATE [dbo].[Existencias] SET Existencia_Deta_Art =  " & nuevaExistencia & " WHERE [Id_Bod] = " & sqlbodega & " and   Id_Art = " & item.id & "; " &
-                    "UPDATE [dbo].[Articulo] SET [costo_art] = " & Math.Round((costofinal / nuevaExistencia), 2) & " WHERE id_art = " & item.id
-                    End If
-
-                    If manipular.EjecutaTransaccion1(sql2) Then
-                        If manipular.EjecutaTransaccion1(sql3) Then
-                            result = "SUCCESS|COMPRA GENERADA EXITOSAMENTE"
-                        Else
-                            result = "ERROR|VERIQUE LA INSERCIÓN DE LOS EXISTENCIAS"
-                        End If
-                    Else
-                        result = "ERROR|VERIQUE LA INSERCIÓN DE LOS PRODUCTOS"
-                        Exit For
-                    End If
-                Next
+                orden = "0"
             End If
 
-            Return result
+            Dim sql As String = "INSERT INTO [dbo].[enc_compra_exterior]([usuario],[fecha],[facturas],[total_fact],[moneda_local],[idsuc],[iddeplab],[idsolicitante],[moneda],[estado],[tipo],[observaciones],[facturan],[idproveedor],[fletee],[seguroe],[otrosge],[creditoe],[iva],[fletel],[agentel],[almacenajel],[arancelt],[tasac],[polizan],[fecha_ingreso],[id_enc_orden]) " &
+               "VALUES ('" & usuario & "', getdate(), '" & serie & "'," & total & ", (SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")," & sucursal & "," & departamento & "," & solicitante & "," & moneda & ", 1," & tipoorden & ",'" & observacion & "','" & factura & "'," & proveedor & "," & fletee & "," & seguroe &
+               ", " & otrosge & "," & creditoe & "," & iva & "," & fletel & "," & agentel & "," & almacenajel & "," & arancelt & "," & tasac & ",'" & polizan & "', '" & fechaingreso & "'," & orden & ")"
+
+            'ejecuto primer comando sql
+            comando.CommandText = sql
+            comando.ExecuteNonQuery()
+
+
+            'OBTENEMOS ID DE LA FACTURA
+            comando.CommandText = "SELECT @@IDENTITY"
+            Dim id As Integer = comando.ExecuteScalar()
+
+
+            For Each item As productos In listproductos
+
+                'INSERTA LOS DATOS 
+                Dim sql2 As String = "INSERT INTO [dbo].[DET_COMPRA_exterior]([id_enc_orcompra_ing],[id_art],[cantidad],[valor],[moneda_local],[subtotal],[idsuc],[arancel]) " &
+                "VALUES (" & id & "," & item.id & "," & item.cantidad & "," & item.precio & ",(SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")," & (item.cantidad * item.precio) & "," & sucursal & "," & item.arancel & ") "
+
+                Dim cantidad As Integer = ObtenerCantidadProducto(item.id)
+
+                Dim sql3 = ""
+                Dim sqlbodega = "(select Id_Bod from dbo.Bodegas  where id_suc =  " & sucursal & " and principal = 1)"
+                If cantidad = 0 Then
+
+                    sql3 = "INSERT INTO [dbo].[Existencias]([Id_Bod],[Id_Art],[Existencia_Deta_Art]) VALUES(" & sqlbodega & ", " & item.id & "," & item.cantidad & "); " &
+                "UPDATE [dbo].[Articulo] SET [costo_art] = " & Math.Round((item.precio * (1 + porcentaje))) & " WHERE id_art = " & item.id
+                Else
+                    Dim precio As Double = ObtenerCostoActual(item.id)
+                    Dim preciocompra As Double = (item.cantidad * item.precio) * (1 + porcentaje)
+                    Dim costofinal As Double = (precio + preciocompra)
+                    Dim nuevaExistencia As Integer = (cantidad + item.cantidad)
+
+                    sql3 = "UPDATE [dbo].[Existencias] SET Existencia_Deta_Art =  " & nuevaExistencia & " WHERE [Id_Bod] = " & sqlbodega & " and   Id_Art = " & item.id & "; " &
+                "UPDATE [dbo].[Articulo] SET [costo_art] = " & Math.Round((costofinal / nuevaExistencia), 2) & " WHERE id_art = " & item.id
+                End If
+
+                'ejecuto segundo comando sql
+                comando.CommandText = sql2
+                comando.ExecuteNonQuery()
+
+
+                'ejecuto tercero comando sql
+                comando.CommandText = sql3
+                comando.ExecuteNonQuery()
+
+            Next
+            transaccion.Commit()
+            result = "SUCCESS|COMPRA GENERADA EXITOSAMENTE"
+
+        Catch ex As Exception
+            'MsgBox(ex.Message.ToString)
+            transaccion.Rollback()
+            result = "ERROR|" & ex.Message
+        Finally
+            conexion.Close()
+        End Try
+
+        Return result
     End Function
 
 

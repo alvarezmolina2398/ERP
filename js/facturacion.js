@@ -443,7 +443,7 @@ $(function () {
                     });
                 } else {
                     totalpagoextra += parseFloat(cheque);
-                    var linea = { 'tipo': tipoPago, 'valor': cheque, 'informacion': nocheque, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
+                    var linea = { 'tipo': tipoPago, 'valor': cheque, 'informacion': 'CHEQUE:' + nocheque, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
                     pagos.push(linea);
                     $('#tipopago').val(0);
                 }

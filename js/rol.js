@@ -226,6 +226,11 @@ function eliminar(id) {
     });
 }
 
+
+function agregarFormulario(factura,saldo) {
+
+}
+
 //metodo utilizado para mostrar lista de datos 
 function mostrarColores() {
     var tds = "";

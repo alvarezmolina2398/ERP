@@ -1,13 +1,14 @@
 ﻿Imports System.Data
+Imports System.Data.SqlClient
 Imports System.Web
 Imports System.Web.Services
 Imports System.Web.Services.Protocols
 
 ' Para permitir que se llame a este servicio web desde un script, usando ASP.NET AJAX, quite la marca de comentario de la línea siguiente.
 <System.Web.Script.Services.ScriptService()>
-<WebService(Namespace:="http://tempuri.org/")> _
-<WebServiceBinding(ConformsTo:=WsiProfiles.BasicProfile1_1)> _
-<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+<WebService(Namespace:="http://tempuri.org/")>
+<WebServiceBinding(ConformsTo:=WsiProfiles.BasicProfile1_1)>
+<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Public Class wsajuste_mercaderia
     Inherits System.Web.Services.WebService
 
@@ -23,7 +24,7 @@ Public Class wsajuste_mercaderia
                 Dim Elemento As productos = New productos()
                 Elemento.id = TablaEncabezado.Rows(i).Item("id_art")
                 Elemento.cantidad = TablaEncabezado.Rows(i).Item("Existencia_Deta_Art")
-                Elemento.Descripcion = TablaEncabezado.Rows(i).Item("Des_Art")
+                Elemento.descripcion = TablaEncabezado.Rows(i).Item("Des_Art")
                 Elemento.codigo = TablaEncabezado.Rows(i).Item("cod_Art").ToString
                 result.Add(Elemento)
 
@@ -39,13 +40,31 @@ Public Class wsajuste_mercaderia
 
         Dim result As String = ""
 
-        Dim sql As String = "INSERT INTO [dbo].[ENC_AJUSTE]([fecha],[usuario],[id_empresa],[observaciones]) VALUES(GETDATE(),'" & usuario & "',(select id_empresa from USUARIO where USUARIO = '" & usuario & "'),'AJUSTE DE MERCADERIA');"
 
-        Dim id As Integer = manipular.EjecutaTransaccion_devolverid(sql)
+        Dim conexion As SqlConnection
+        conexion = New SqlConnection()
+        conexion.ConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings("ConString").ConnectionString
+        conexion.Open()
+        Dim comando As New SqlCommand
+        Dim transaccion As SqlTransaction
+        transaccion = conexion.BeginTransaction
+        comando.Connection = conexion
+        comando.Transaction = transaccion
 
-        If id = 0 Then
-            result = "Error | VERIQUE LA INSERCIÓN DE LA COMPRA"
-        Else
+
+
+        Try
+            Dim sql As String = "INSERT INTO [dbo].[ENC_AJUSTE]([fecha],[usuario],[id_empresa],[observaciones]) VALUES(GETDATE(),'" & usuario & "',(select id_empresa from USUARIO where USUARIO = '" & usuario & "'),'AJUSTE DE MERCADERIA');"
+
+            'ejecuto primer comando sql
+            comando.CommandText = sql
+            comando.ExecuteNonQuery()
+
+
+            'OBTENEMOS ID DE LA FACTURA
+            comando.CommandText = "SELECT @@IDENTITY"
+            Dim id As Integer = comando.ExecuteScalar()
+
             result = "SUCCESS|"
             For Each item As ajuste_mer In datos_ajuste
                 Dim cantidad As Integer = ObtenerCantidadProducto(item.id, item.bodega)
@@ -58,13 +77,13 @@ Public Class wsajuste_mercaderia
                             " UPDATE [dbo].[Existencias] SET [Existencia_Deta_Art] = " & cantidad - item.cantidad & " WHERE Id_Bod = " & item.bodega & " and Id_Art = " & item.id
 
 
-                        If manipular.EjecutaTransaccion1(sql2) Then
+                        'ejecuto primer comando sql
+                        comando.CommandText = sql2
+                        comando.ExecuteNonQuery()
 
-                            result = result & "AJUSTE GENERADO EXITOSAMENTE EXITOSAMENTE PRODUCTO " & item.descripcion
 
-                        Else
-                            result = result & "ERROR VERIQUE EL AJUSTE DEL  PRODUCTO: " & item.descripcion
-                        End If
+
+                        result = result & "AJUSTE GENERADO EXITOSAMENTE EXITOSAMENTE PRODUCTO " & item.descripcion
 
 
                     Else
@@ -76,17 +95,30 @@ Public Class wsajuste_mercaderia
                         " UPDATE [dbo].[Existencias] SET [Existencia_Deta_Art] = " & cantidad + item.cantidad & " WHERE Id_Bod = " & item.bodega & " and Id_Art = " & item.id
 
 
-                    If manipular.EjecutaTransaccion1(sql2) Then
+                    'ejecuto primer comando sql
+                    comando.CommandText = sql2
+                    comando.ExecuteNonQuery()
 
-                        result = result & "AJUSTE GENERADO EXITOSAMENTE EXITOSAMENTE PRODUCTO " & item.descripcion
 
-                    Else
-                        result = result & "ERROR VERIQUE EL AJUSTE DEL  PRODUCTO: " & item.descripcion
-                    End If
+
+                    result = result & "AJUSTE GENERADO EXITOSAMENTE EXITOSAMENTE PRODUCTO " & item.descripcion
 
                 End If
             Next
-        End If
+            transaccion.Commit()
+        Catch ex As Exception
+            'MsgBox(ex.Message.ToString)
+            transaccion.Rollback()
+            result = "ERROR|" & ex.Message
+        Finally
+            conexion.Close()
+        End Try
+
+
+
+
+
+
         Return result
     End Function
 
