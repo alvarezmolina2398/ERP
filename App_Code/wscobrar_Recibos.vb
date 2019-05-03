@@ -80,7 +80,7 @@ Public Class wscobrar_Recibos
 
             For Each item As pagos In listpagos
                 Dim StrPago As String = "INSERT INTO [dbo].[DET_RECIBO]([idRecibo],[tipoPago],[documento],[valor]) " &
-                    "VALUES(" & idRecivo & ",'" & item.tipo & "','" & item.informacion & "',0)"
+                    "VALUES(" & idRecivo & ",'" & item.tipo & "','" & item.informacion & "'," & item.valor & ")"
                 comando.CommandText = StrPago
                 comando.ExecuteNonQuery()
             Next

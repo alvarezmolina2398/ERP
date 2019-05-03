@@ -185,7 +185,7 @@ Public Class wscortecaja
 
     Public Class Datos
         Public fechaCierre As String
-        Public serie As Integer
+        Public serie As String
         Public firma As String
         Public nit As String
         Public cliente As String

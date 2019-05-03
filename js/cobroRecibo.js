@@ -91,6 +91,7 @@ function agregarFormulario(factura, saldo, descripcion, valor) {
 
     }
 
+    $('#lb-fac').text(parseFloat(total_FAC).toFixed(2));
 
     $("#tabla-fac").footable({
         "paging": {
@@ -115,7 +116,7 @@ function cargarFacturas(idcliente) {
 
                 var dts = "<tr class='odd'><td>" + this.serie + "-" + this.firma + "</td><td>" + this.valor + "</td><td>" + this.saldo + "</td><td>" +
                     "<span data-dismiss='modal' onclick='agregarFormulario(" + this.id_fac + "," + this.saldo +",\"" + this.serie+ "-"+ this.firma + "\","+ this.valor+")' class='btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='AGREGAR AL CARRITO DE COMPRAS' data-original-title='' title ='' > " +
-                    "<i class='material-icons'>shopping_cart</i> " +
+                    "<i class='material-icons'>add</i> " +
                     "</span></td></tr>"
 
                 $('#tbody-Fac').append(dts);
@@ -462,6 +463,8 @@ $(function () {
             }
             totalpago = total_pago
 
+            $('#lb-pagos').text(parseFloat(totalpago).toFixed(2));
+
             $("#tabla-pagos").footable({
                 "paging": {
                     "enabled": true,
@@ -523,9 +526,6 @@ function limpiar() {
     $('#btn-guardar').addClass('btn-success');
 
 }
-
-
-
 
 
 function cargarMetodosdePago() {

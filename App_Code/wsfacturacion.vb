@@ -13,7 +13,10 @@ Public Class wsfacturacion
     Inherits System.Web.Services.WebService
 
     <WebMethod()>
-    Public Function Facturar(ByVal usuario As String, ByVal total As Double, ByVal descuento As Double, ByVal idcliente As Integer, ByVal diascredito As Integer, ByVal listproductos As List(Of productos), ByVal listpagos As List(Of pagos)) As String
+    Public Function Facturar(ByVal usuario As String, ByVal total As Double, ByVal descuento As Double, ByVal idcliente As Integer,
+                             ByVal diascredito As Integer, ByVal listproductos As List(Of productos), ByVal listpagos As List(Of pagos),
+                             ByVal efectivo As Double, ByVal cheques As Double, ByVal tarjeta As Double, ByVal valorExcencion As Double,
+                             ByVal valorCertificado As Double, ByVal valorCredito As Double) As String
         Dim result As String
 
         Dim conexion As SqlConnection
@@ -36,6 +39,9 @@ Public Class wsfacturacion
             Dim firma As String = retornoData(0)
             Dim cae = retornoData(1)
 
+
+            total = total - descuento
+
             Dim totalsiniva As Double = total / 1.12
             Dim iva As Double = totalsiniva * 0.12
 
@@ -43,8 +49,8 @@ Public Class wsfacturacion
             Dim sucursal As String = "SELECT id_sucursal  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
 
             'INSERCION DE LA FACTURA
-            Dim str1 As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[ENC_FACTURA]([USUARIO],[id_empresa],[Serie_Fact],[Fecha],[firma],[Cae],[Total_Factura],[Iva_Factura],[Total_sin_iva],[Total_Descuento],[Id_Clt],[dias_cred],[id_suc]) " &
-                "VALUES('" & usuario & "', (" & empresa & "),'" & serie & "',GETDATE(),'" & firma & "','" & cae & "'," & total & "," & Math.Round(iva, 2) & "," & Math.Round(totalsiniva, 2) & "," & descuento & "," & idcliente & "," & diascredito & ", (" & sucursal & ") )"
+            Dim str1 As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[ENC_FACTURA]([USUARIO],[id_empresa],[Serie_Fact],[Fecha],[firma],[Cae],[Total_Factura],[Iva_Factura],[Total_sin_iva],[Total_Descuento],[Id_Clt],[dias_cred],[id_suc],[efectivo],[cheques],[tarjeta],[valorExcencion],[valorCertificado],[valorCredito]) " &
+                "VALUES('" & usuario & "', (" & empresa & "),'" & serie & "',GETDATE(),'" & firma & "','" & cae & "'," & total & "," & Math.Round(iva, 2) & "," & Math.Round(totalsiniva, 2) & "," & descuento & "," & idcliente & "," & diascredito & ", (" & sucursal & ")," & efectivo & "," & cheques & "," & tarjeta & "," & valorExcencion & "," & valorCertificado & "," & valorCredito & " )"
 
             'ejecuto primer comando sql
             comando.CommandText = str1
@@ -69,7 +75,7 @@ Public Class wsfacturacion
 
             'INSERTAMOS EL RECIVO EN LA FACTURA
             Dim strFac_RECIVO As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[DET_RECIBO_FACT]([idRecibo],[id_enc],[abonado]) " &
-                "VALUES(" & idRecivo & "," & id & "," & total & ");"
+                "VALUES(" & idRecivo & "," & id & "," & (total - valorCredito) & ");"
 
             comando.CommandText = strFac_RECIVO
             comando.ExecuteNonQuery()
