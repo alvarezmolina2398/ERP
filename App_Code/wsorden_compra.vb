@@ -126,7 +126,7 @@ Public Class wsorden_compra
 
                 Dim sql3 = ""
                 Dim sqlbodega = "(select Id_Bod from dbo.Bodegas  where id_suc =  " & sucursal & " and principal = 1)"
-                If cantidad = 0 Then
+                If cantidad < 0 Then
 
                     sql3 = "INSERT INTO [dbo].[Existencias]([Id_Bod],[Id_Art],[Existencia_Deta_Art]) VALUES(" & sqlbodega & ", " & item.id & "," & item.cantidad & "); " &
                     "UPDATE [dbo].[Articulo] SET [costo_art] = " & item.precio & " WHERE id_art = " & item.id
@@ -227,7 +227,7 @@ Public Class wsorden_compra
 
                 Dim sql3 = ""
                 Dim sqlbodega = "(select Id_Bod from dbo.Bodegas  where id_suc =  " & sucursal & " and principal = 1)"
-                If cantidad = 0 Then
+                If cantidad < 0 Then
 
                     sql3 = "INSERT INTO [dbo].[Existencias]([Id_Bod],[Id_Art],[Existencia_Deta_Art]) VALUES(" & sqlbodega & ", " & item.id & "," & item.cantidad & "); " &
                 "UPDATE [dbo].[Articulo] SET [costo_art] = " & Math.Round((item.precio * (1 + porcentaje))) & " WHERE id_art = " & item.id
@@ -718,7 +718,7 @@ Public Class wsorden_compra
     Public Function ObtenerCantidadProducto(ByVal idart As Integer) As Integer
         Dim SQL As String = "Select Existencia_Deta_Art as cantidad from dbo.Existencias where Id_Bod = 1 AND Id_Art = " & idart
 
-        Dim result As Integer = 0
+        Dim result As Integer = -1
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
 
         For i = 0 To TablaEncabezado.Rows.Count - 1

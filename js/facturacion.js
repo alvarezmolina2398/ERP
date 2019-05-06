@@ -102,7 +102,13 @@ $(function () {
     });
 
 
-
+    $('#nit').focus(function () {
+        $('#nit').val(null);
+        $('#nombre').val(null);
+        $('#idcliente').val(null);
+        $("#descuento").val(null)
+        $("#diascredito").val(null)
+    });
 
     //accion para crear los clientes
     $('#btn-Cliente').click(function () {
@@ -597,8 +603,7 @@ $(function () {
 
                 var regaloinfo = $('#regaloinfo').val();
                 var regalo = $('#regalo').val();
-
-
+                var extra = $('#idregalo').val();
                 if (regaloinfo == "" || regalo == "") {
                     $('.jq-toast-wrap').remove();
                     $.toast({
@@ -609,22 +614,29 @@ $(function () {
                         icon: 'error',
                         stack: false
                     });
-                }
-                else if (parseFloat(regalo) +totalpagoextra + totefectivo > (totalfac - totaldescuento)) {
-                     $('.jq-toast-wrap').remove();
-                     $.toast({
+                } else if (totefectivo + totalpagoextra  >= (totalfac - totaldescuento)) {
+                    $('.jq-toast-wrap').remove();
+                    $.toast({
                         heading: '¡ERROR!',
-                        text: "ES VALOR DEL REGALO SOBREPASA LA CANTIDAD A PAGAR ",
+                        text: "YA ES SUFICIENTE DINERO PARA PAGAR ",
                         position: 'bottom-right',
                         showHideTransition: 'plain',
                         icon: 'error',
                         stack: false
-                     });
-                } 
+                    });
+                }
                 else {
                     totalpagoextra += parseFloat(regalo);
                     totalregalo += parseFloat(regalo);
-                    var linea = { 'tipo': tipoPago, 'valor': regalo, 'informacion': 'FORMULARIO: ' + regaloinfo, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
+
+                    
+                    var camb = parseFloat((parseFloat(regalo) + parseFloat($('#pago').text())) - ((totalfac - totaldescuento)));
+                    var pago = 0;
+                    if (camb < 0) {
+                        camb = 0;
+                    } 
+
+                    var linea = { 'tipo': tipoPago, 'valor': regalo, 'informacion': 'FORMULARIO: ' + regaloinfo + " PROXIMO SALDO A FAVOR "+ parseFloat(camb).toFixed(2) , 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': camb, 'extra' : extra};
                     pagos.push(linea);
                     $('#tipopago').val(0);
                 }
@@ -760,6 +772,40 @@ $(function () {
                 }
             });
         }
+    });
+
+
+    //accion para cargar el cupon del cliente
+    $('#regaloinfo').blur(function () {
+        $.ajax({
+            url: 'wsfacturacion.asmx/ObtenerValorDelCupon',
+            data: '{serie: "' + $(this).val() + '", idcliente : ' + $('#idcliente').val()  +'}',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            success: function (msg) {
+                var arr = msg.d.split("|");
+
+
+                if (arr[0] == 'SUCCESS') {
+
+                    $('#regalo').val(arr[1]);
+                    $('#idregalo').val(arr[2]);
+                } else {
+                    $('.jq-toast-wrap').remove();
+                    $.toast({
+                        heading: '¡ERROR!',
+                        text: arr[1],
+                        position: 'bottom-right',
+                        showHideTransition: 'plain',
+                        icon: 'error',
+                        stack: false
+                    });
+                    $('#regalo').val(null);
+                    $('#idregalo').val(null);
+                }
+
+            }
+        });
     });
 
 
@@ -969,6 +1015,10 @@ function limpiar() {
     $('#idcliente').val(null);
 
 
+
+
+
+
     $('#nit').val('C/F');
     $('#nombre').val('CONSUMIDOR FINAL');
     $('#idcliente').val(1);
@@ -991,10 +1041,37 @@ function limpiar() {
     totalcredito = 0;
     totalexcersion = 0;
 
+
     $(".footable").footable({
         "paging": {
             "enabled": true,
             "position": "center"
+        }
+    });
+
+
+    //consume el ws para obtener los datos
+    $.ajax({
+        url: 'wstraslados.asmx/ObtenerExistenciasPorBodega',
+        data: '{bodega: ' + $('#bodega').val() + '}',
+        type: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        success: function (msg) {
+            $('#tbod-datos').html(null);
+            $.each(msg.d, function () {
+                var tds = "<tr class='odd'><td>" + this.codigo + "</td><td>" + this.descripcion + "</td><td>" + this.cantidad + "</td>" +
+                    "<td><span data-dismiss='modal' onclick='cargarProducto(" + this.id + ",\"" + this.codigo + "\",\"" + this.descripcion + "\",\"" + this.cantidad + "\"," + this.precio + ")' class='btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='AGREGAR AL CARRITO DE COMPRAS' data-original-title='' title ='' > " +
+                    "<i class='material-icons'>shopping_cart</i> " +
+                    "</span></td></tr>"
+
+                $('#tbod-datos').append(tds);
+
+            });
+
+
+            $('#tab-datos').dataTable();
+            $('[data-toggle="popover"]').popover();
+
         }
     });
 

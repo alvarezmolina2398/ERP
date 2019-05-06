@@ -104,8 +104,26 @@ Public Class wsfacturacion
             For Each item As pagos In listpagos
                 Dim StrPago As String = "INSERT INTO [dbo].[DET_RECIBO]([idRecibo],[tipoPago],[documento],[valor]) " &
                     "VALUES(" & idRecivo & ",'" & item.tipo & "','" & item.informacion & "'," & item.valor - item.cambio & ")"
+
                 comando.CommandText = StrPago
                 comando.ExecuteNonQuery()
+
+
+                If item.tipo = 8 Then
+                    Dim strCupon As String = ""
+                    If item.cambio = 0 Then
+                        strCupon = "UPDATE [ERPDEVLYNGT].[dbo].[DETA_CUPON] set saldo  = 0   WHERE estado  = 1 and id_cupon_detalle = " & item.extra
+                    Else
+                        strCupon = "UPDATE [ERPDEVLYNGT].[dbo].[DETA_CUPON] set saldo  = " & item.valor - (item.valor - item.cambio) & "   WHERE estado  = 1 and id_cupon_detalle = " & item.extra
+                    End If
+
+                    comando.CommandText = strCupon
+                    comando.ExecuteNonQuery()
+
+                End If
+
+
+
             Next
 
 
@@ -118,7 +136,7 @@ Public Class wsfacturacion
         Catch ex As Exception
             'MsgBox(ex.Message.ToString)
             transaccion.Rollback()
-            result = "ERROR|" & ex.Message
+            result = "Error|" & ex.Message
         Finally
             conexion.Close()
         End Try
@@ -129,7 +147,7 @@ Public Class wsfacturacion
 
     <WebMethod()>
     Public Function ObtenerCantidadProducto(ByVal idart As Integer, ByVal idbodega As Integer) As Integer
-        Dim SQL As String = "Select Existencia_Deta_Art as cantidad from ERPDEVLYNGT.dbo.Existencias where Id_Art = " & idart & " and id_bod = " & idbodega
+        Dim SQL As String = "Select Existencia_Deta_Art As cantidad from ERPDEVLYNGT.dbo.Existencias where Id_Art = " & idart & " And id_bod = " & idbodega
 
         Dim result As Integer = 0
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -172,13 +190,29 @@ Public Class wsfacturacion
 
     <WebMethod()>
     Public Function ObtenerSiguienteCorrelativo(ByVal serie As String) As String
-        Dim SQL As String = "SELECT ISNULL(MAX(CAST(SUBSTRING(firma, 10, 25) as numeric)), 180000000000) + 1 as Siguiente FROM [ERPDEVLYNGT].[dbo].[ENC_FACTURA] WHERE Serie_Fact = '" & serie & "';"
+        Dim SQL As String = "Select ISNULL(MAX(CAST(SUBSTRING(firma, 10, 25) As numeric)), 180000000000) + 1 As Siguiente FROM [ERPDEVLYNGT].[dbo].[ENC_FACTURA] WHERE Serie_Fact = '" & serie & "';"
 
         Dim result As String = ""
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
 
         For i = 0 To TablaEncabezado.Rows.Count - 1
             result = TablaEncabezado.Rows(i).Item("Siguiente").ToString
+        Next
+
+        Return result
+
+    End Function
+
+
+    <WebMethod()>
+    Public Function ObtenerValorDelCupon(ByVal serie As String, ByVal idcliente As Integer) As String
+        Dim SQL As String = "SELECT d.saldo, d. id_cupon_detalle FROM [ERPDEVLYNGT].[dbo].[DETA_CUPON] d  INNER JOIN [ERPDEVLYNGT].[dbo].[ENCA_CUPON] EC ON EC.id_cupon = d.id_cupon  WHERE d.estado  = 1 and d.saldo > 0 and d.serie = '" & serie & "'  and EC.idcliente  = " & idcliente
+
+        Dim result As String = ""
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+        result = "ERROR|ERROR PUEDA QUE NO EXISTA EL CUPON, NO POSEA SALDO O EL CLIENTE SEA INCORRECTO"
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            result = "SUCCESS|" & TablaEncabezado.Rows(i).Item("saldo").ToString & "|" & TablaEncabezado.Rows(i).Item("id_cupon_detalle").ToString
         Next
 
         Return result
@@ -202,6 +236,8 @@ Public Class wsfacturacion
         Public informacion As String
         Public tipoPagoText As String
         Public cambio As Double
+        Public extra As Integer
+        Public pago As Double
     End Class
 
 
