@@ -45,6 +45,7 @@ var totalfac = 0;
 
 
 $(function () {
+    var user = window.atob(getCookie("us"));
     cargarTipoPedido();
     CargarMonedas();
     cagarSucursal();
@@ -228,7 +229,6 @@ $(function () {
     $('#btn-guardar').click(function () {
         $('#btn-guardar').attr('disabled', true);
         $('#bt-cancelar').attr('disabled', true);
-        var usuario = 'admin1';
         if (validarForm()) {
             var idproveedor = $('#idproveedor').val();
             var moneda = $('#moneda').val();
@@ -240,7 +240,7 @@ $(function () {
             //consume el ws para obtener los datos
             $.ajax({
                 url: 'wsorden_compra.asmx/Ordenar',
-                data: '{ proveedor:' + idproveedor + ',  moneda:' + moneda + ',  sucursal:' + sucursal + ', departamento:' + departamento + ',  solicitante:' + solicitante + ',  tipoorden:' + tipo + ',  observacion:"' + observacion + '",  total:' + totalfac + ',  usuario:"' + usuario + '",  listproductos: ' + JSON.stringify(datos) + '}',
+                data: '{ proveedor:' + idproveedor + ',  moneda:' + moneda + ',  sucursal:' + sucursal + ', departamento:' + departamento + ',  solicitante:' + solicitante + ',  tipoorden:' + tipo + ',  observacion:"' + observacion + '",  total:' + totalfac + ',  usuario:"' + user + '",  listproductos: ' + JSON.stringify(datos) + '}',
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
                 beforeSend: function () {
@@ -666,4 +666,22 @@ function cagarDepartamentoLaboral() {
             });
         }
     });
+}
+
+
+//metodo para obtener la sesion
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
 }

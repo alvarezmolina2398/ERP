@@ -10,8 +10,6 @@
 
 
 
-
-
 var datos = [];
 
 var totalfac = 0;
@@ -21,7 +19,7 @@ var totalfac = 0;
 $(function () {
     cargarBodegas();
 
-
+    var usuario = window.atob(getCookie("us"));
 
     $('#bodega').change(function () {
         if ($(this).val() > 0) {
@@ -78,6 +76,17 @@ $(function () {
     //accion para cargar la tabla
     $('#bt-agregar').click(function () {
 
+        var cantidadentabla = 0;
+
+
+        for (var i = 0; i < datos.length; i++) {
+
+            if (datos[i].codigo == $('#codigoproducto').val() && datos[i].bodega == $('#bodega').val()) {
+                cantidadentabla += parseInt(datos[i].cantidad);
+            }
+        }
+
+
         if ($('#cantidad').val() == "" || $('#producto').val() == "" || $('#tipo').val() == "") {
             $('.jq-toast-wrap').remove();
             $.toast({
@@ -101,7 +110,7 @@ $(function () {
                 stack: false
             });
 
-        } else if ($('#tipo').val() == 2 && $('#cantidad').val() > $('#cantidadexistente').val() ) {
+        } else if ($('#tipo').val() == 2 && (parseInt($('#cantidad').val()) +  parseInt(cantidadentabla)) > parseInt($('#cantidadexistente').val()) ) {
 
                $('.jq-toast-wrap').remove();
                $.toast({
@@ -115,9 +124,47 @@ $(function () {
 
         }
         else {
-            var linea = { 'cantidad': $('#cantidad').val(), 'codigo': $('#codigoproducto').val(), 'descripcion': $('#nomproducto').val(), 'tipo': $('#tipo').val(), 'id': $('#idproducto').val(), 'observacion': $('#observacion').val(), 'bodega': $('#bodega').val(), 'bod': $('#bodega option:selected').text()};
-            datos.push(linea);
 
+
+            for (var i = 0; i < datos.length; i++) {
+               
+
+               var resultado = false;
+               if (datos[i].codigo == $('#codigoproducto').val() && datos[i].bodega == $('#bodega').val() && datos[i].tipo == $('#tipo').val()) {
+
+
+                    
+                    if ($('#tipo').val() == 2 && (parseInt($('#cantidad').val()) + parseInt(datos[i].cantidad)) > parseInt($('#cantidadexistente').val())) {
+
+                        $('.jq-toast-wrap').remove();
+                        $.toast({
+                            heading: '¡ERROR!',
+                            text: "NO EXISTE LA SUFICIENTE CANTIDAD PARA REDUCIR LA EXISTENCIA DEL PRODUCTO",
+                            position: 'bottom-right',
+                            showHideTransition: 'plain',
+                            icon: 'error',
+                            stack: false
+                        });
+
+                    } else {
+                        datos[i].cantidad = parseInt($('#cantidad').val()) + parseInt(datos[i].cantidad)
+                    }
+
+
+                   resultado = true;
+
+                    
+                }
+            }
+
+
+            if (!resultado) {
+                var linea = { 'cantidad': $('#cantidad').val(), 'codigo': $('#codigoproducto').val(), 'descripcion': $('#nomproducto').val(), 'tipo': $('#tipo').val(), 'id': $('#idproducto').val(), 'observacion': $('#observacion').val(), 'bodega': $('#bodega').val(), 'bod': $('#bodega option:selected').text() };
+                datos.push(linea);
+
+            }
+
+           
             var total = 0;
             $('#tbody').html(null);
             for (var i = 0; i < datos.length; i++) {
@@ -186,7 +233,7 @@ $(function () {
     $('#btn-guardar').click(function () {
         $('#btn-guardar').attr('disabled', true);
         $('#btn-cancelar').attr('disabled', true);
-        var usuario = 'admin1';
+
         if (validarForm()) {
             //consume el ws para obtener los datos
             $.ajax({
@@ -428,8 +475,17 @@ function eliminar(id) {
     var total = 0;
     $('#tbody').html(null);
     for (var i = 0; i < datos.length; i++) {
-        total += (datos[i].cantidad * datos[i].precio);
-        var tds = '<tr><td>' + datos[i].codigo + '</td><td>' + datos[i].descripcion + '</td><td>' + parseFloat(datos[i].precio).toFixed(2) + '</td><td>' + datos[i].cantidad + '</td><td>' + parseFloat(datos[i].cantidad * datos[i].precio).toFixed(2) + '</td><td onclick="eliminar(' + i + ')"><center><button class="btn btn-danger btn-sm"><i class="material-icons">delete_forever</i></button></center></td></tr>'
+        var tipo = '';
+
+
+        if ($('#tipo').val() == 1) {
+            tipo = '+';
+        } else {
+            tipo = '-'
+        }
+
+
+        var tds = '<tr><td>' + datos[i].codigo + '</td><td>' + datos[i].descripcion + '</td><td>' + tipo + datos[i].cantidad + '</td><td>' + datos[i].observacion + '</td><td>' + datos[i].bod + '</td><td onclick="eliminar(' + i + ')"><center><button class="btn btn-danger btn-sm"><i class="material-icons">delete_forever</i></button></center></td></tr>'
 
         $('#tbody').append(tds);
     };
@@ -437,8 +493,8 @@ function eliminar(id) {
         td = '<tr><td> -- </td><th> <b>TOTAL</b> </th><td><center> --- </center></td><td><center> --- </center></td><td><b>' + parseFloat(total).toFixed(2) + '</b></td><td></td></tr>'
         $('#tbody').append(td);
     }
-    totalfac = total;
 
+    totalfac = total;
 
     $(".footable").footable({
         "paging": {
@@ -446,6 +502,11 @@ function eliminar(id) {
             "position": "center"
         }
     });
+
+    $('#codigoproducto').val(null);
+    $('#cantidad').val(null);
+    $('#producto').val(null);
+    $('#idproducto').val(null);
 }
 
 
@@ -462,4 +523,22 @@ function cargarBodegas() {
             });
         }
     });
+}
+
+
+//metodo para obtener la sesion
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
 }

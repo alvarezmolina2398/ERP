@@ -21,6 +21,18 @@ $(function () {
     //accion para cargar la tabla
     $('#bt-agregar').click(function () {
 
+        var cantidadentabla = 0;
+
+
+        for (var i=0; i < datos.length; i++) {
+
+            if (datos[i].codigo == $('#codigoproducto').val() && datos[i].origen == $('#bodegaorigen').val() ) {
+                cantidadentabla += parseInt(datos[i].cantidad);
+            }
+        }
+
+        
+
         if ($('#cantidad').val() == "" || $('#producto').val() == "" || $('#bodegaorigen').val() == "" || $('#bodegadestino').val() == "") {
             $('.jq-toast-wrap').remove();
             $.toast({
@@ -58,25 +70,54 @@ $(function () {
             });
 
         }
-        else if ( parseInt( $('#cantidadexistente').val() ) < parseInt( $('#cantidad').val() )   ) {
+        else if ( parseInt( $('#cantidadexistente').val() ) < (parseInt( $('#cantidad').val() ) +  cantidadentabla ) ) {
 
-            $('.jq-toast-wrap').remove();
-            $.toast({
+             $('.jq-toast-wrap').remove();
+             $.toast({
                 heading: '¡ERROR!',
                 text: "LA CANTIDAD SOLICITADA EXCEDE LA CANTIDAD DE PRODUCTO EXISTENTE",
                 position: 'bottom-right',
                 showHideTransition: 'plain',
                 icon: 'error',
                 stack: false
-            });
+             });
 
         }
         else {
-            var linea = {
-                'cantidad': $('#cantidad').val(), 'codigo': $('#codigoproducto').val(), 'descripcion': $('#nomproducto').val(), 'bo1': $('#bodegaorigen option:selected').text(), 'id': $('#idproducto').val(), 'bo2': $('#bodegadestino option:selected').text(), 'origen': $('#bodegaorigen').val(), 'destino': $('#bodegadestino').val(), 'observacion': $('#observacion').val() };
-            datos.push(linea);
+            var resultado = false;
+             for (var i = 0; i < datos.length; i++) {
+                 if (datos[i].codigo == $('#codigoproducto').val() && datos[i].origen == $('#bodegaorigen').val() && datos[i].destino == $('#bodegadestino').val()) {
+                     if (parseInt($('#cantidadexistente').val()) < (parseInt($('#cantidad').val()) + parseInt(datos[i].cantidad))) {
 
-            var total = 0;
+                         $('.jq-toast-wrap').remove();
+                         $.toast({
+                             heading: '¡ERROR!',
+                             text: "LA CANTIDAD SOLICITADA EXCEDE LA CANTIDAD DE PRODUCTO EXISTENTE",
+                             position: 'bottom-right',
+                             showHideTransition: 'plain',
+                             icon: 'error',
+                             stack: false
+                         });
+
+                     } else {
+                         datos[i].cantidad = parseInt(datos[i].cantidad) + parseInt($('#cantidad').val());
+                     }
+
+                    resultado = true;
+                 }
+
+             }
+
+             if (!resultado) {
+                 var linea = {
+                     'cantidad': $('#cantidad').val(), 'codigo': $('#codigoproducto').val(), 'descripcion': $('#nomproducto').val(), 'bo1': $('#bodegaorigen option:selected').text(), 'id': $('#idproducto').val(), 'bo2': $('#bodegadestino option:selected').text(), 'origen': $('#bodegaorigen').val(), 'destino': $('#bodegadestino').val(), 'observacion': $('#observacion').val()
+                 };
+                 datos.push(linea);
+             }
+
+            
+
+            var total = 0; 
             $('#tbody').html(null);
             for (var i = 0; i < datos.length; i++) {
                 total += (datos[i].cantidad * datos[i].precio);
@@ -447,7 +488,7 @@ function eliminar(id) {
     $('#tbody').html(null);
     for (var i = 0; i < datos.length; i++) {
         total += (datos[i].cantidad * datos[i].precio);
-        var tds = '<tr><td>' + datos[i].codigo + '</td><td>' + datos[i].descripcion + '</td><td>' + parseFloat(datos[i].precio).toFixed(2) + '</td><td>' + datos[i].cantidad + '</td><td>' + parseFloat(datos[i].cantidad * datos[i].precio).toFixed(2) + '</td><td onclick="eliminar(' + i + ')"><center><button class="btn btn-danger btn-sm"><i class="material-icons">delete_forever</i></button></center></td></tr>'
+        var tds = '<tr><td>' + datos[i].codigo + '</td><td>' + datos[i].descripcion + '</td><td>' + datos[i].cantidad + '</td><td>' + datos[i].bo1 + '</td><td>' + datos[i].bo2 + '</td><td onclick="eliminar(' + i + ')"><center><button class="btn btn-danger btn-sm"><i class="material-icons">delete_forever</i></button></center></td></tr>'
 
         $('#tbody').append(tds);
     };
@@ -455,8 +496,8 @@ function eliminar(id) {
         td = '<tr><td> -- </td><th> <b>TOTAL</b> </th><td><center> --- </center></td><td><center> --- </center></td><td><b>' + parseFloat(total).toFixed(2) + '</b></td><td></td></tr>'
         $('#tbody').append(td);
     }
-    totalfac = total;
 
+    totalfac = total;
 
     $(".footable").footable({
         "paging": {
@@ -464,6 +505,12 @@ function eliminar(id) {
             "position": "center"
         }
     });
+
+    $('#codigoproducto').val(null);
+    $('#cantidad').val(null);
+    $('#producto').val(null);
+    $('#precio').val(null);
+    $('#idproducto').val(null);
 }
 
 

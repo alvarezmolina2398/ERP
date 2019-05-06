@@ -1,6 +1,5 @@
 ﻿//llamada a metodos necesarios para el sistema
 $(function () {
-
     //llamada a los datos para que se ejecuten al cargarse la pagina
     mostrarDatos();
     cargarCompanias();

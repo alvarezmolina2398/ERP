@@ -1,4 +1,5 @@
 ﻿$(function () {
+    var user = window.atob(getCookie("us"));
     mostrarDatos();
     cargarMarcas();
     cargarClasificacion();
@@ -132,7 +133,8 @@
         var preciogt = $('#preciogt');
         var precioes = 0
         var costo = $('#costo');
-        var usuario= 'admin';
+        
+        
         var id = $('#id').val();
 
         if ($('#precioes').val() != 0) {
@@ -144,10 +146,10 @@
             var url1 = ''
             if (id != 0) {
                 url1 = 'Actualizar'
-                data1 = '{ descripcion : "' + descripcion.val() + '",  codigo : "' + codigo.val() + '",  tipo : ' + tipo.val() + ',  cod_pro1 : "' + codigo1.val() + '",  cod_pro2 : "' + codigo2.val() + '",  marca : ' + marca.val() + ', idsubmarca : ' + submarca.val() + ',  id_clasi : ' + clasificacion.val() + ',  id_subclasi : ' + subclasificacion.val() + ',  idcolor : ' + color.val() + ',  preciogt : "' + preciogt.val() + '",  precioEs : ' + precioes + ', costo : ' + costo.val() + ',  usuario : "' + usuario + '", id : '+ id +'}';
+                data1 = '{ descripcion : "' + descripcion.val() + '",  codigo : "' + codigo.val() + '",  tipo : ' + tipo.val() + ',  cod_pro1 : "' + codigo1.val() + '",  cod_pro2 : "' + codigo2.val() + '",  marca : ' + marca.val() + ', idsubmarca : ' + submarca.val() + ',  id_clasi : ' + clasificacion.val() + ',  id_subclasi : ' + subclasificacion.val() + ',  idcolor : ' + color.val() + ',  preciogt : "' + preciogt.val() + '",  precioEs : ' + precioes + ', costo : ' + costo.val() + ',  usuario : "' + user + '", id : '+ id +'}';
             } else {
                 url1 = 'Insertar'
-                data1 = '{ descripcion : "' + descripcion.val() + '",  codigo : "' + codigo.val() + '",  tipo : ' + tipo.val() + ',  cod_pro1 : "' + codigo1.val() + '",  cod_pro2 : "' + codigo2.val() + '",  marca : ' + marca.val() + ', idsubmarca : ' + submarca.val() + ',  id_clasi : ' + clasificacion.val() + ',  id_subclasi : ' + subclasificacion.val() + ',  idcolor : ' + color.val() + ',  preciogt : "' + preciogt.val() + '",  precioEs : ' + precioes + ', costo : ' + costo.val() + ',  usuario : "' + usuario + '"}';
+                data1 = '{ descripcion : "' + descripcion.val() + '",  codigo : "' + codigo.val() + '",  tipo : ' + tipo.val() + ',  cod_pro1 : "' + codigo1.val() + '",  cod_pro2 : "' + codigo2.val() + '",  marca : ' + marca.val() + ', idsubmarca : ' + submarca.val() + ',  id_clasi : ' + clasificacion.val() + ',  id_subclasi : ' + subclasificacion.val() + ',  idcolor : ' + color.val() + ',  preciogt : "' + preciogt.val() + '",  precioEs : ' + precioes + ', costo : ' + costo.val() + ',  usuario : "' + user + '"}';
             }
 
             //consume el ws para obtener los datos
@@ -588,4 +590,22 @@ function eliminar(id) {
     $('#bt-guardar').removeClass('btn-success');
     $('#bt-guardar').removeClass('btn-warning');
     $('#bt-guardar').addClass('btn-info');
+}
+
+
+//metodo para obtener la sesion
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
 }

@@ -84,9 +84,9 @@ Public Class wsadmin_bodegas
 
     'Metodo para Guardar Los datos
     <WebMethod()>
-    Public Function Insertar(ByVal descripcion As String, ByVal observacion As String, ByVal empresa As String, ByVal idsucursal As Integer) As String
+    Public Function Insertar(ByVal descripcion As String, ByVal observacion As String, ByVal empresa As String, ByVal idsucursal As Integer, ByVal principal As Integer) As String
         'consulta sql
-        Dim sql As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[Bodegas] (Id_suc,Id_Empsa,Nom_Bod,Observ_Bod,estado) VALUES(" & idsucursal & ", " & empresa & ", '" & descripcion & "','" & observacion & "',1);"
+        Dim sql As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[Bodegas] (Id_suc,Id_Empsa,Nom_Bod,Observ_Bod,estado,principal) VALUES(" & idsucursal & ", " & empresa & ", '" & descripcion & "','" & observacion & "',1," & principal & ");"
 
 
         Dim result As String = ""
@@ -107,9 +107,9 @@ Public Class wsadmin_bodegas
 
     'Metodo para Actualizar Los datos
     <WebMethod()>
-    Public Function Actualizar(ByVal descripcion As String, ByVal observacion As String, ByVal empresa As String, ByVal idsucursal As Integer, ByVal id As Integer) As String
+    Public Function Actualizar(ByVal descripcion As String, ByVal observacion As String, ByVal empresa As String, ByVal idsucursal As Integer, ByVal id As Integer, ByVal principal As Integer) As String
         'consulta sql
-        Dim sql As String = "UPDATE [ERPDEVLYNGT].[dbo].[Bodegas] set  Id_suc = " & idsucursal & ",Id_Empsa = " & empresa & ",Nom_Bod = '" & descripcion & "',Observ_Bod = '" & observacion & "' where Id_Bod = " & id
+        Dim sql As String = "UPDATE [ERPDEVLYNGT].[dbo].[Bodegas] set principal = 0 where Id_Empsa=" & empresa & " and Id_suc = " & idsucursal & " and estado =1; UPDATE [ERPDEVLYNGT].[dbo].[Bodegas] set  Id_suc = " & idsucursal & ",Id_Empsa = " & empresa & ",Nom_Bod = '" & descripcion & "',Observ_Bod = '" & observacion & "', principal = " & principal & " where Id_Bod = " & id
 
 
 
@@ -148,6 +148,32 @@ Public Class wsadmin_bodegas
 
         Return result
     End Function
+
+    <WebMethod()>
+    Public Function ExistePrincipal(ByVal id As Integer) As Boolean
+        Dim SQL As String = "Select  count(*) as cantidad from [ERPDEVLYNGT].[dbo].[Bodegas] b WHERE estado = 1 And Id_Empsa = " & id & " And principal = 1"
+
+
+        Dim resultado As Boolean = False
+        Dim result As Integer = 0
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            result = TablaEncabezado.Rows(i).Item("cantidad")
+        Next
+
+        If result > 0 Then
+            resultado = True
+        Else
+            resultado = False
+        End If
+
+        Return resultado
+
+    End Function
+
+
+
 
     Public Class datos
         Public id As Integer

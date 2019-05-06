@@ -44,6 +44,7 @@ $.ajax({
 });
 
 $(function () {
+    var usuario = window.atob(getCookie("us"));
 
     $('#tab-datos').dataTable();
     var fecha = new Date();
@@ -282,7 +283,7 @@ $(function () {
     $('#btn-Pagar').click(function () {
         $('#btn-guardar').attr('disabled', true);
         $('#btn-cancelar').attr('disabled', true);
-        var usuario = 'admin1';
+
         if (validarForm()) {
 
             //consume el ws para obtener los datos
@@ -666,7 +667,6 @@ function eliminar(id) {
 }
 
 function cargarBodegas() {
-    var usuario = 'admin1';
     //consume el ws para obtener los datos
     $.ajax({
         url: 'wsadmin_bodegas.asmx/ObtenerDatosPorSucursal',
@@ -969,3 +969,19 @@ function eliminarPago(id, tipo, valor) {
     $('.pn-pagos').hide();
 }
 
+//metodo para obtener la sesion
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}

@@ -1,4 +1,8 @@
 ﻿$(function () {
+
+    //oculta el panel
+    $('#pn-principal').hide();
+
     cargarCompanias();
     mostrarDatos();
 
@@ -85,6 +89,24 @@
                 }
             });
 
+
+            $.ajax({
+                url: 'wsadmin_bodegas.asmx/ExistePrincipal',
+                data: '{id: ' + $(this).val() + '}',
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                success: function (msg) {
+                    if (msg.d) {
+                        //oculta el panel
+                        $('#pn-principal').hide();
+                    } else {
+                        //muestra el panel
+                        $('#principal').prop('checked', false);
+                        $('#pn-principal').show();
+                    }
+                }
+            });
+
         }
     });
 
@@ -122,6 +144,12 @@
         var observacion = $('#observacion');
         var region = $('#region');
         var id = $('#id').val();
+        var principal = 0;
+
+        
+        if ($('#principal').prop('checked')) {
+            principal = 1;
+        }
 
 
         if (validarForm()) {
@@ -129,10 +157,10 @@
             var url1 = ''
             if (id != 0) {
                 url1 = 'Actualizar'
-                data1 = '{descripcion : "'+ descripcion.val() +'",  observacion : "'+ observacion.val() +'",  empresa : "'+ company.val()+'",  idsucursal : '+ sucursal.val()+',  id : '+id+'}';
+                data1 = '{descripcion : "'+ descripcion.val() +'",  observacion : "'+ observacion.val() +'",  empresa : "'+ company.val()+'",  idsucursal : '+ sucursal.val()+',  id : '+id+', principal: '+ principal  +'}';
             } else {
                 url1 = 'Insertar'
-                data1 = '{descripcion : "' + descripcion.val() + '",  observacion : "' + observacion.val() + '",  empresa : "' + company.val() + '",  idsucursal : ' + sucursal.val() +'}';
+                data1 = '{descripcion : "' + descripcion.val() + '",  observacion : "' + observacion.val() + '",  empresa : "' + company.val() + '",  idsucursal : ' + sucursal.val() + ', principal: ' + principal +'}';
             }
 
             //consume el ws para obtener los datos
@@ -354,7 +382,7 @@ function limpiar() {
     $('#observacion').val(null);
     $('#region').html('<option value="0">Seleccione Una Opción</option>');
     $('#id').val(0);
-
+    $('#principal').prop('checked', false);
     $('#company').removeClass('is-invalid');
     $('#company').removeClass('is-valid');
 
@@ -379,12 +407,37 @@ function limpiar() {
 }
 
 // funcion para cargar datos en el formulario
-function cargarenFormulario(id, descripcion, observacion, company, sucursal, region) {
+function cargarenFormulario(id, descripcion, observacion, company, sucursal, region,principal) {
     limpiar();
     $('#id').val(id);
     $('#descripcion').val(descripcion);
     $('#company').val(company);
     $('#observacion').val(observacion);
+
+    $.ajax({
+        url: 'wsadmin_bodegas.asmx/ExistePrincipal',
+        data: '{id: ' + company + '}',
+        type: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        success: function (msg) {
+            if (msg.d) {
+                //oculta el panel
+                $('#pn-principal').show();
+            } else {
+                //muestra el panel
+                $('#principal').prop('checked', false);
+                $('#pn-principal').show();
+            }
+        }
+    });
+
+
+
+    if (principal == 1) {
+        $('#principal').prop('checked', true);
+    } else {
+        $('#principal').prop('checked', false);       
+    }
     $('#region').html('<option value="0">Seleccione Una Opción</option>');
     $('#sucursal').html('<option value="0">Seleccione Una Opción</option>')
     //consume el ws para obtener los datos
@@ -448,7 +501,7 @@ function mostrarDatos() {
             $('#tbod-datos').html(null);
             $.each(msg.d, function () {
                 tds = "<tr class='odd'><td>" + i + "</td><td>" + this.empresa + "</td><td>" + this.region + "</td><td>" + this.sucursal + "</td><td>" + this.descripcion + "</td><td> " +
-                    "<span onclick='cargarenFormulario(" + this.id + ",\"" + this.descripcion + "\",\"" + this.observacion + "\"," + this.idempresa + "," + this.idsucursal + "," + this.idregion  + ")' class='Mdnew btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='Click para poder cargar los datos en el formulario, para poder actualizar.' data-original-title='' title ='' > " +
+                    "<span onclick='cargarenFormulario(" + this.id + ",\"" + this.descripcion + "\",\"" + this.observacion + "\"," + this.idempresa + "," + this.idsucursal + "," + this.idregion + "," + this.prioridad +")' class='Mdnew btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='Click para poder cargar los datos en el formulario, para poder actualizar.' data-original-title='' title ='' > " +
                     "<i class='material-icons'>edit</i> " +
                     "</span> " +
                     "<span onclick='eliminar(" + this.id + ")' class='btn btn-sm btn-outline-danger' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='Click para poder Inhabilitar el dato seleccionado, Esto hara que dicho dato no aparesca en ninguna acción, menu o formulario del sistema.' data-original-title='' title=''> " +

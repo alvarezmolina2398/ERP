@@ -16,7 +16,7 @@ $.ajax({
 
 //llamada a metodos necesarios para el sistema
 $(function () {
-
+    var usuario = window.atob(getCookie("us"));
     //llamada a los datos para que se ejecuten al cargarse la pagina
     mostrarDatos();
 
@@ -79,7 +79,7 @@ $(function () {
         var valor = $('#valor').val();
         var observacion = $('#observacion').val();
         var idcliente = $('#idcliente').val();
-        var usuario = 'admin1';
+
 
         if (serie == "") {
             $('.jq-toast-wrap').remove();
@@ -393,6 +393,24 @@ function mostrarDatos() {
     });
 
 };
+
+
+//metodo para obtener la sesion
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
 
 
 

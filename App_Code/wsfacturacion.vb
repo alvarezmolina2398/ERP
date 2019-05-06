@@ -31,7 +31,7 @@ Public Class wsfacturacion
 
         Try
 
-            Dim serie As String = "FAC"
+            Dim serie As String = ObtenerSerie(usuario)
             Dim eliminaDoc1 As String = "FACE66"
             Dim eliminaDoc2 As String = "FACE63"
             Dim eliminaDoc3 As String = serie & "001"
@@ -162,6 +162,27 @@ Public Class wsfacturacion
         Return result
 
     End Function
+
+    <WebMethod()>
+    Public Function ObtenerSerie(ByVal usuario As String) As String
+        Dim SQL As String = "select top 1 Series from [ERPDEVLYNGT].[dbo].[SUCURSALES] S INNER JOIN [ERPDEVLYNGT].[dbo].[Correlativos] C ON c.id_correlativo = s.id_correlativo where id_suc = (select u.id_sucursal from  [ERPDEVLYNGT].[dbo].[USUARIO] u where USUARIO = '" & usuario & "')"
+
+        Dim result As String = ""
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            For ii = 0 To 1
+
+                result = TablaEncabezado.Rows(i).Item("Series")
+            Next
+        Next
+
+        Return result
+
+    End Function
+
+
+
 
 
     Public Function Factura_ElectronicaDemo(ByVal serie As String) As String

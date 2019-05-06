@@ -195,7 +195,7 @@ function llenarTablas() {
 $(function () {
     //oculta la tabla 2
     interna();
-
+    var usuario = window.atob(getCookie("us"));
     cargarTipoPedido();
     CargarMonedas();
     cagarSucursal();
@@ -433,7 +433,7 @@ $(function () {
     $('#btn-guardar').click(function () {
         $('#btn-guardar').attr('disabled', true);
         $('#bt-cancelar').attr('disabled', true);
-        var usuario = 'admin1';
+
         if (validarForm()) {
             var idproveedor = $('#idproveedor').val();
             var moneda = $('#moneda').val();
@@ -1151,4 +1151,22 @@ function cagarDepartamentoLaboral() {
             });
         }
     });
+}
+
+
+//metodo para obtener la sesion
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
 }
