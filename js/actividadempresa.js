@@ -15,7 +15,6 @@
         });
 
         $('.Mdnew').click(function () {
-            $('#id').val(0);
             $('#MdNuevo').modal('toggle');
             document.getElementById('nombre').value = '';
         });

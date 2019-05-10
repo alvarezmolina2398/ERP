@@ -9,9 +9,6 @@
 });
 
 
-
-
-
 var datos = [];
 
 $(function () {
@@ -255,6 +252,7 @@ $(function () {
                             stack: false
                         });
 
+                        window.open(arr[2], '_blank');
                         limpiar();
 
                     } else {

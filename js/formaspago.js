@@ -52,7 +52,7 @@
                 nombre.focus();
             }
             /* -- METODOS DE INSERTAR -- */
-        })
+        });
 
 
 

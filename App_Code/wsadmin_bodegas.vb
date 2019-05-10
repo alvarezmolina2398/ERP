@@ -82,6 +82,40 @@ Public Class wsadmin_bodegas
 
     End Function
 
+    <WebMethod()>
+    Public Function ObtenerDatosIDSucursal(ByVal sucursal As Integer) As List(Of datos)
+        Dim SQL As String = "SELECT b.Id_Bod, e.id_empresa, s.id_suc,b.Nom_Bod,b.Observ_Bod, e.nombre as empresa, s.descripcion as sucursal,r.id_region, r.descripcion as region, b.principal " &
+            "FROM [ERPDEVLYNGT].[dbo].[Bodegas] b " &
+            "INNER JOIN [ERPDEVLYNGT].[dbo].[ENCA_CIA] e ON e.id_empresa = b.Id_Empsa  " &
+            "INNER JOIN [ERPDEVLYNGT].[dbo].[SUCURSALES] s ON s.id_suc = b.Id_suc " &
+            "INNER JOIN [ERPDEVLYNGT].[dbo].[REGIONES] r ON r.id_region = s.id_region " &
+            "WHERE b.estado = 1 and s.estado = 1 and e.estado = 1 and r.estado = 1 and s.id_suc = " & sucursal
+
+        Dim result As List(Of [datos]) = New List(Of datos)()
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            For ii = 0 To 1
+                Dim Elemento As New datos
+                Elemento.id = TablaEncabezado.Rows(i).Item("Id_Bod")
+                Elemento.idempresa = TablaEncabezado.Rows(i).Item("id_empresa")
+                Elemento.idsucursal = TablaEncabezado.Rows(i).Item("id_suc")
+                Elemento.descripcion = TablaEncabezado.Rows(i).Item("Nom_Bod").ToString
+                Elemento.observacion = TablaEncabezado.Rows(i).Item("Observ_Bod").ToString
+                Elemento.empresa = TablaEncabezado.Rows(i).Item("empresa").ToString
+                Elemento.sucursal = TablaEncabezado.Rows(i).Item("sucursal").ToString
+                Elemento.idregion = TablaEncabezado.Rows(i).Item("id_region").ToString
+                Elemento.region = TablaEncabezado.Rows(i).Item("region").ToString
+                Elemento.prioridad = TablaEncabezado.Rows(i).Item("principal")
+                result.Add(Elemento)
+                ii = ii + 1
+            Next
+        Next
+
+        Return result
+
+    End Function
+
     'Metodo para Guardar Los datos
     <WebMethod()>
     Public Function Insertar(ByVal descripcion As String, ByVal observacion As String, ByVal empresa As String, ByVal idsucursal As Integer, ByVal principal As Integer) As String
@@ -109,9 +143,13 @@ Public Class wsadmin_bodegas
     <WebMethod()>
     Public Function Actualizar(ByVal descripcion As String, ByVal observacion As String, ByVal empresa As String, ByVal idsucursal As Integer, ByVal id As Integer, ByVal principal As Integer) As String
         'consulta sql
-        Dim sql As String = "UPDATE [ERPDEVLYNGT].[dbo].[Bodegas] set principal = 0 where Id_Empsa=" & empresa & " and Id_suc = " & idsucursal & " and estado =1; UPDATE [ERPDEVLYNGT].[dbo].[Bodegas] set  Id_suc = " & idsucursal & ",Id_Empsa = " & empresa & ",Nom_Bod = '" & descripcion & "',Observ_Bod = '" & observacion & "', principal = " & principal & " where Id_Bod = " & id
+        Dim sql As String = ""
 
+        If principal = 1 Then
+            sql = "UPDATE [ERPDEVLYNGT].[dbo].[Bodegas] set principal = 0 where Id_Empsa=" & empresa & " and Id_suc = " & idsucursal & " and estado =1;"
+        End If
 
+        sql = sql & "UPDATE [ERPDEVLYNGT].[dbo].[Bodegas] set  Id_suc = " & idsucursal & ",Id_Empsa = " & empresa & ",Nom_Bod = '" & descripcion & "',Observ_Bod = '" & observacion & "', principal = " & principal & " where Id_Bod = " & id
 
         Dim result As String = ""
 

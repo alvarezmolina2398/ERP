@@ -16,6 +16,15 @@
     });
 });
 
+
+
+function UrlExists(url) {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', url, false);
+    http.send();
+    return http.status != 404;
+} 
+
 var usuario = window.atob(getCookie("us"));
 
 var datos = [];
@@ -834,15 +843,32 @@ $(function () {
 
 
                     if (arr[0] == 'SUCCESS') {
-                        $('.jq-toast-wrap').remove();
-                        $.toast({
-                            heading: '¡EXITO!',
-                            text: arr[1],
-                            position: 'bottom-right',
-                            showHideTransition: 'plain',
-                            icon: 'success',
-                            stack: false
-                        });
+                       
+
+                        if (UrlExists(arr[2])) {
+                            window.open(arr[2], '_blank');
+                            $('.jq-toast-wrap').remove();
+                            $.toast({
+                                heading: '¡EXITO!',
+                                text: arr[1],
+                                position: 'bottom-right',
+                                showHideTransition: 'plain',
+                                icon: 'success',
+                                stack: false
+                            });
+                        } else {
+                            $('.jq-toast-wrap').remove();
+                            $.toast({
+                                heading: '¡ERROR!',
+                                text: "ERROR AL DESCARGAR EL ARCHIVO, PERO SI SE REALZO LA VENTAf",
+                                position: 'bottom-right',
+                                showHideTransition: 'plain',
+                                icon: 'error',
+                                stack: false
+                            });
+                        }
+                            
+
                         $('#MdPago').modal('toggle');
                         limpiar();
 

@@ -7,14 +7,14 @@
         }
         else {
             alert("vuelve a iniciar sesion");
-            location.href = '/ERP2/Login.html';
+            location.href = '/Login.html';
         }
     });
 
 
     $('#btnCerrar').click(function () {
         eliminarCookie("us");
-        location.href = '/ERP2/Login.html';
+        location.href = '/Login.html';
     });
 
 

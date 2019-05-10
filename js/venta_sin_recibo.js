@@ -16,14 +16,6 @@
     });
 });
 
-function UrlExists(url) {
-    var http = new XMLHttpRequest();
-    http.open('HEAD', url, false);
-    http.send();
-    return http.status != 404;
-} 
-
-
 var usuario = window.atob(getCookie("us"));
 
 var datos = [];
@@ -52,58 +44,7 @@ $.ajax({
 });
 
 $(function () {
-    $('[data-toggle="tooltip"]').tooltip();
-    $('#cod-reimprimir').val(null);
 
-    //evento enter en producto
-    $('#cod-reimprimir').keypress(function (e) {
-        var keycode = (e.keyCode ? e.keyCode : e.which);
-        if (keycode == 13 && $(this).length > 0) {
-
-            $.ajax({
-                url: 'wscotizacion.asmx/Reimprimir',
-                data: '{idcotizacion : ' + $(this).val() + '}',
-                type: 'POST',
-                contentType: 'application/json; charset=utf-8',
-                success: function (msg) {
-
-                    var arr = msg.d.split('|');
-
-
-                    if (arr[0] == 'SUCCESS') {
-
-                        if (!UrlExists(arr[1])) {
-                            $('.jq-toast-wrap').remove();
-                            $.toast({
-                                heading: '¡ERROR!',
-                                text: "ESTA ORDEN DE COMPRA NO EXISTE",
-                                position: 'bottom-right',
-                                showHideTransition: 'plain',
-                                icon: 'error',
-                                stack: false
-                            });
-                        } else {
-
-                            window.open(arr[1], '_blank');
-                        }
-
-                    } else {
-
-                        $('.jq-toast-wrap').remove();
-                        $.toast({
-                            heading: '¡ERROR!',
-                            text: arr[1],
-                            position: 'bottom-right',
-                            showHideTransition: 'plain',
-                            icon: 'error',
-                            stack: false
-                        });
-                    }
-                }
-            });
-
-        }
-    });
 
     $('#tab-datos').dataTable();
     var fecha = new Date();
@@ -112,13 +53,6 @@ $(function () {
     cargarMetodosdePago();
     cargarTiposTarjeta();
 
-
-
-    $('#nit').val('C/F');
-    $('#nombre').val('CONSUMIDOR FINAL');
-    $('#idcliente').val(1);
-    $('#diascredito').val(0);
-    $('#descuento').val(0);
 
     var options_cliente = {
         data: autocompletecliente,
@@ -347,8 +281,8 @@ $(function () {
 
             //consume el ws para obtener los datos
             $.ajax({
-                url: 'wscotizacion.asmx/Cotizar',
-                data: '{ usuario : "' + usuario + '",  total : ' + totalfac + ',  descuento : ' + totaldescuento + ',  idcliente : ' + $('#idcliente').val() + ',  diascredito : ' + $('#diascredito').val() + ',  listproductos : ' + JSON.stringify(datos) + ', observaciones: "' + $('#observaciones').val() +'"}',
+                url: 'wsventasinrecibo.asmx/Vender',
+                data: '{ usuario : "' + usuario + '",  total : ' + totalfac + ',  descuento : ' + totaldescuento + ',  idcliente : ' + $('#idcliente').val() + ',  diascredito : ' + $('#diascredito').val() + ',  listproductos : ' + JSON.stringify(datos) + '}',
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
                 beforeSend: function () {
@@ -373,7 +307,7 @@ $(function () {
                             stack: false
                         });
 
-                        window.open(arr[2], '_blank');
+                       // window.open(arr[2], '_blank');
                         limpiar();
 
                     } else {
@@ -397,7 +331,7 @@ $(function () {
                     }
                 }
             });
-        }   
+        }
     });
 
     $('#bt-buscar').click(function () {
@@ -647,13 +581,6 @@ function limpiar() {
     $('#nombre').val(null);
     $('#nit').val(null);
     $('#idcliente').val(null);
-    $('#observaciones').val(null);
-
-    $('#nit').val('C/F');
-    $('#nombre').val('CONSUMIDOR FINAL');
-    $('#idcliente').val(1);
-    $('#diascredito').val(0);
-    $('#descuento').val(0);
 
     datos = [];
     pagos = [];

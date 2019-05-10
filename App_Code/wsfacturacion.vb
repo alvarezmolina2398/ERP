@@ -1,8 +1,11 @@
 ﻿Imports System.Data
 Imports System.Data.SqlClient
+Imports System.IO
 Imports System.Web
 Imports System.Web.Services
 Imports System.Web.Services.Protocols
+Imports iTextSharp.text
+Imports iTextSharp.text.pdf
 
 ' Para permitir que se llame a este servicio web desde un script, usando ASP.NET AJAX, quite la marca de comentario de la línea siguiente.
 <System.Web.Script.Services.ScriptService()>
@@ -130,7 +133,7 @@ Public Class wsfacturacion
             transaccion.Commit()
 
 
-            result = "SUCCESS| DATOS FACTURADOS EXITOSAMENTE"
+            result = "SUCCESS| DATOS FACTURADOS EXITOSAMENTE|" & CrearPDF(usuario, listproductos, listpagos, descuento, serie, firma, cae, idcliente)
 
 
         Catch ex As Exception
@@ -182,8 +185,667 @@ Public Class wsfacturacion
     End Function
 
 
+    <WebMethod()>
+    Public Function CrearPDF(ByVal usuario As String, ByVal listproductos As List(Of productos), ByVal listpagos As List(Of pagos), ByVal descuento As Double, ByVal Serie As String, ByVal firma As String, ByVal cae As String, ByVal idcliente As Integer) As String
+        Dim result As String = ""
+        Try
+
+            Dim doc As Document = New iTextSharp.text.Document(iTextSharp.text.PageSize.LETTER, 5, 5, 5, 5)
+            Dim datafecha As Date = Now
+            Dim nombredoc As String = "pdf\factura" & Serie & firma & ".pdf"
+            Dim pd As PdfWriter = PdfWriter.GetInstance(doc, New FileStream(Server.MapPath("~\vista\" & nombredoc), FileMode.Create))
+            result = nombredoc
+            doc.AddTitle("FACTURA ")
+            doc.AddAuthor("")
+            doc.AddCreationDate()
+
+            doc.Open()
+
+            Dim PARRAFO_ESPACIO As Paragraph = New Paragraph(" ", FontFactory.GetFont("Arial", 12, iTextSharp.text.Font.BOLD))
+            PARRAFO_ESPACIO.Alignment = Element.ALIGN_CENTER
+
+            Dim d As datos = obtenerDatosEmpresa(usuario)
+
+            doc.Add(PARRAFO_ESPACIO)
+            doc.Add(PARRAFO_ESPACIO)
+            doc.Add(PARRAFO_ESPACIO)
 
 
+
+            Dim RutaImagen As String = Server.MapPath("~")
+            Dim Imagen As Image = Image.GetInstance(RutaImagen & "\img\logo.png")
+
+            Imagen.ScalePercent(30) 'escala al tamaño de la imagen
+            Imagen.SetAbsolutePosition(25, 690)
+
+            doc.Add(Imagen)
+
+            Dim Tabla As PdfPTable = New PdfPTable(3)
+
+            Tabla.TotalWidth = 550.0F
+            Tabla.LockedWidth = True
+            Tabla.SetWidths({33, 33, 34})
+
+            Dim Celda As PdfPCell = New PdfPCell
+
+
+            Celda = New PdfPCell(New Paragraph(" ", FontFactory.GetFont("Arial", 14, iTextSharp.text.Font.BOLD)))
+            Celda.Colspan = 1
+            Celda.BorderWidth = 0
+            Celda.HorizontalAlignment = Element.ALIGN_LEFT
+            Tabla.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(d.descripcionextra, FontFactory.GetFont("Arial", 14, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("VENTA DE MERCADERIA", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthBottom = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+
+
+            Celda = New PdfPCell(New Paragraph(" ", FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+
+            Celda = New PdfPCell(New Paragraph(d.descripcion, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthBottom = 0
+            Celda.BorderWidthTop = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(" ", FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+
+            Celda = New PdfPCell(New Paragraph(d.direccion, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(Date.Now, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthBottom = 0
+            Celda.BorderWidthTop = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(" ", FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+
+            Celda = New PdfPCell(New Paragraph(d.nit, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(usuario, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthBottom = 1
+            Celda.BorderWidthTop = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Tabla.AddCell(Celda)
+
+
+            doc.Add(Tabla)
+            doc.Add(PARRAFO_ESPACIO)
+
+
+
+            Dim dp As datos = ObtenerDatosCliente(idcliente)
+
+            Dim TablaCliente As PdfPTable = New PdfPTable(2)
+
+            TablaCliente.TotalWidth = 550.0F
+            TablaCliente.LockedWidth = True
+            TablaCliente.SetWidths({20, 80})
+
+            Celda = New PdfPCell(New Paragraph("NIT: ", FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthBottom = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_JUSTIFIED
+            TablaCliente.AddCell(Celda)
+
+
+            Celda = New PdfPCell(New Paragraph(dp.nit, FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthBottom = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_JUSTIFIED
+            TablaCliente.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("NOMBRE: ", FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthBottom = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_JUSTIFIED
+            TablaCliente.AddCell(Celda)
+
+
+            Celda = New PdfPCell(New Paragraph(dp.descripcion, FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthBottom = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_JUSTIFIED
+            TablaCliente.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("DIRECCION: ", FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_JUSTIFIED
+            TablaCliente.AddCell(Celda)
+
+
+            Celda = New PdfPCell(New Paragraph(dp.direccion, FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_JUSTIFIED
+            TablaCliente.AddCell(Celda)
+
+
+
+            'AGREGAMOS LA TABLA DE DATOS DEL PROVEEDOR
+            doc.Add(TablaCliente)
+            doc.Add(PARRAFO_ESPACIO)
+
+
+
+
+            Dim TablaDatos As PdfPTable = New PdfPTable(6)
+
+            TablaDatos.TotalWidth = 550.0F
+            TablaDatos.LockedWidth = True
+            TablaDatos.SetWidths({15, 35, 14, 20, 8, 8})
+
+            Celda = New PdfPCell(New Paragraph("CODIGO", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("NOMBRE", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("BODEGA", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("CANTIDAD", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("PRECIO", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("SUB-TOTAL", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+
+            Dim total As Double = 0
+
+            For Each item As productos In listproductos
+                Celda = New PdfPCell(New Paragraph(item.codigo, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 0
+                Celda.HorizontalAlignment = Element.ALIGN_LEFT
+                TablaDatos.AddCell(Celda)
+
+                Celda = New PdfPCell(New Paragraph(item.descripcion, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 0
+                Celda.Colspan = 0
+                Celda.HorizontalAlignment = Element.ALIGN_LEFT
+                TablaDatos.AddCell(Celda)
+
+                Celda = New PdfPCell(New Paragraph(item.cantidad, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 0
+                Celda.Colspan = 0
+                Celda.HorizontalAlignment = Element.ALIGN_CENTER
+                TablaDatos.AddCell(Celda)
+
+                Celda = New PdfPCell(New Paragraph(item.bo, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 0
+                Celda.Colspan = 0
+                Celda.HorizontalAlignment = Element.ALIGN_LEFT
+                TablaDatos.AddCell(Celda)
+
+                Celda = New PdfPCell(New Paragraph(Format(item.precio, "##,###.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 1
+                Celda.Colspan = 0
+                Celda.HorizontalAlignment = Element.ALIGN_RIGHT
+                TablaDatos.AddCell(Celda)
+
+                Celda = New PdfPCell(New Paragraph(Format(item.precio * item.cantidad, "##,###.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 1
+                Celda.Colspan = 0
+                Celda.HorizontalAlignment = Element.ALIGN_RIGHT
+                TablaDatos.AddCell(Celda)
+
+
+                total += item.precio * item.cantidad
+
+            Next
+
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("SUB-TOTAL", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 1
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(Format(total, "##,###.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 1
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_RIGHT
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("DESCUENTO", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 1
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(Format(descuento, "##,###.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 1
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_RIGHT
+            TablaDatos.AddCell(Celda)
+
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("TOTAL", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 1
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(Format(total - descuento, "##,###.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 1
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_RIGHT
+            TablaDatos.AddCell(Celda)
+
+            doc.Add(TablaDatos)
+
+            doc.Add(PARRAFO_ESPACIO)
+            doc.Add(PARRAFO_ESPACIO)
+
+
+            Dim PARRAFO_INFO As Paragraph = New Paragraph(" INFORMACION DE PAGO ", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL))
+            PARRAFO_INFO.Alignment = Element.ALIGN_CENTER
+            doc.Add(PARRAFO_INFO)
+            doc.Add(PARRAFO_ESPACIO)
+            doc.Add(PARRAFO_ESPACIO)
+            Dim TablaPagos As PdfPTable = New PdfPTable(5)
+
+            TablaPagos.TotalWidth = 550.0F
+            TablaPagos.LockedWidth = True
+            TablaPagos.SetWidths({25, 25, 17, 16, 17})
+
+            Celda = New PdfPCell(New Paragraph("FORMA DE PAGO", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaPagos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("DESCRIPCION", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaPagos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("VALOR", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaPagos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("CAMBIO", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaPagos.AddCell(Celda)
+
+
+            Celda = New PdfPCell(New Paragraph("SUB-TOTAL", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaPagos.AddCell(Celda)
+
+            Dim total_pago As Double = 0
+
+
+            For Each item As pagos In listpagos
+                Celda = New PdfPCell(New Paragraph(item.tipoPagoText, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 0
+                Celda.HorizontalAlignment = Element.ALIGN_RIGHT
+                TablaPagos.AddCell(Celda)
+
+                Celda = New PdfPCell(New Paragraph(item.informacion, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 0
+                Celda.Colspan = 0
+                Celda.HorizontalAlignment = Element.ALIGN_LEFT
+                TablaPagos.AddCell(Celda)
+
+                Celda = New PdfPCell(New Paragraph(Format(item.valor, "##,###.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 0
+                Celda.Colspan = 0
+                Celda.HorizontalAlignment = Element.ALIGN_RIGHT
+                TablaPagos.AddCell(Celda)
+
+                Celda = New PdfPCell(New Paragraph(Format(item.cambio, "##,###.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 0
+                Celda.Colspan = 0
+                Celda.HorizontalAlignment = Element.ALIGN_LEFT
+                TablaPagos.AddCell(Celda)
+
+                Celda = New PdfPCell(New Paragraph(Format(item.valor - item.cambio, "##,###.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+                Celda.BorderWidth = 1
+                Celda.BorderWidthTop = 0
+                Celda.BorderWidthRight = 1
+                Celda.Colspan = 0
+                Celda.HorizontalAlignment = Element.ALIGN_RIGHT
+                TablaPagos.AddCell(Celda)
+
+                total_pago += item.valor - item.cambio
+
+            Next
+
+
+
+
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaPagos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("TOTAL", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaPagos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaPagos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("--", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaPagos.AddCell(Celda)
+
+
+            Celda = New PdfPCell(New Paragraph(Format(total_pago, "##,###.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 1
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_RIGHT
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaPagos.AddCell(Celda)
+
+
+            doc.Add(TablaPagos)
+
+            Dim PARRAFO_SERIE As Paragraph = New Paragraph(Serie & "-" & firma, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD))
+            PARRAFO_SERIE.Alignment = Element.ALIGN_CENTER
+            doc.Add(PARRAFO_SERIE)
+            PARRAFO_SERIE = New Paragraph(cae, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD))
+            PARRAFO_SERIE.Alignment = Element.ALIGN_CENTER
+            doc.Add(PARRAFO_SERIE)
+
+
+
+            doc.Close()
+
+
+        Catch ex As Exception
+            result = ex.Message
+        End Try
+
+        Return result
+    End Function
+
+
+    <WebMethod()>
+    Public Function obtenerDatosEmpresa(ByVal usuario As String) As datos
+        Dim SQL As String = "SELECT  top 1 [id_empresa],[nombre],[nombre_comercial],[direccion],[nit]  FROM [ERPDEVLYNGT].[dbo].[ENCA_CIA] " &
+            " where id_empresa = (select u.id_empresa from [dbo].[USUARIO] u where u.USUARIO = '" & usuario & "')"
+
+        Dim result As datos = New datos()
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+        Dim Elemento As New datos
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            For ii = 0 To 1
+
+                Elemento.id = TablaEncabezado.Rows(i).Item("id_empresa")
+                Elemento.descripcion = TablaEncabezado.Rows(i).Item("nombre").ToString
+                Elemento.descripcionextra = TablaEncabezado.Rows(i).Item("nombre_comercial").ToString
+                Elemento.nit = TablaEncabezado.Rows(i).Item("nit").ToString
+                Elemento.direccion = TablaEncabezado.Rows(i).Item("direccion").ToString
+                ii = ii + 1
+            Next
+        Next
+
+        Return Elemento
+
+    End Function
 
     Public Function Factura_ElectronicaDemo(ByVal serie As String) As String
 
@@ -240,6 +902,28 @@ Public Class wsfacturacion
 
     End Function
 
+    <WebMethod()>
+    Public Function obtenerDatosCliente(ByVal id As Integer) As datos
+        Dim SQL As String = "SELECT Id_Clt,nit_clt,Nom_clt,Dire_Clt FROM [ERPDEVLYNGT].[dbo].[CLiente] WHERE Id_Clt = " & id
+
+        Dim result As datos = New datos()
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+        Dim Elemento As New datos
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            For ii = 0 To 1
+
+                Elemento.id = TablaEncabezado.Rows(i).Item("Id_Clt")
+                Elemento.descripcion = TablaEncabezado.Rows(i).Item("Nom_clt").ToString
+                Elemento.direccion = TablaEncabezado.Rows(i).Item("Dire_Clt").ToString
+                Elemento.nit = TablaEncabezado.Rows(i).Item("nit_clt").ToString
+                ii = ii + 1
+            Next
+        Next
+
+        Return Elemento
+
+    End Function
+
 
     Public Class productos
         Public id As Integer
@@ -247,7 +931,8 @@ Public Class wsfacturacion
         Public bo As String
         Public bodega As Integer
         Public precio As Double
-
+        Public descripcion As String
+        Public codigo As String
     End Class
 
 
@@ -259,6 +944,14 @@ Public Class wsfacturacion
         Public cambio As Double
         Public extra As Integer
         Public pago As Double
+    End Class
+
+    Public Class datos
+        Public id As Integer
+        Public descripcion As String
+        Public descripcionextra As String
+        Public direccion As String
+        Public nit As String
     End Class
 
 

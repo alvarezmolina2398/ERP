@@ -17,7 +17,7 @@ Public Class wscotizacion
 
     <WebMethod()>
     Public Function Cotizar(ByVal usuario As String, ByVal total As Double, ByVal descuento As Double, ByVal idcliente As Integer,
-                             ByVal diascredito As Integer, ByVal listproductos As List(Of productos)) As String
+                             ByVal diascredito As Integer, ByVal listproductos As List(Of productos), ByVal observaciones As String) As String
         Dim result As String
 
         Dim conexion As SqlConnection
@@ -50,8 +50,8 @@ Public Class wscotizacion
             Dim sucursal As String = "SELECT id_sucursal  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
 
             'INSERCION DE LA FACTURA
-            Dim str1 As String = "INSERT INTO [dbo].[ENC_COTIZACION]([USUARIO] ,[id_empresa],[Serie_Fact],[Fecha],[firma] ,[Cae],[Total_Factura],[Iva_Factura],[Total_sin_iva],[Total_Descuento],[Id_Clt],[dias_cred],[id_suc]) " &
-                 "VALUES('" & usuario & "', (" & empresa & "),'" & serie & "',GETDATE(),'" & firma & "','" & cae & "'," & total & "," & Math.Round(iva, 2) & "," & Math.Round(totalsiniva, 2) & "," & descuento & "," & idcliente & "," & diascredito & ", (" & sucursal & "));"
+            Dim str1 As String = "INSERT INTO [dbo].[ENC_COTIZACION]([USUARIO] ,[id_empresa],[Serie_Fact],[Fecha],[firma] ,[Cae],[Total_Factura],[Iva_Factura],[Total_sin_iva],[Total_Descuento],[Id_Clt],[dias_cred],[id_suc],[observaciones]) " &
+                 "VALUES('" & usuario & "', (" & empresa & "),'" & serie & "',GETDATE(),'" & firma & "','" & cae & "'," & total & "," & Math.Round(iva, 2) & "," & Math.Round(totalsiniva, 2) & "," & descuento & "," & idcliente & "," & diascredito & ", (" & sucursal & "),'" & observaciones & "');"
 
 
             'ejecuto primer comando sql
@@ -79,7 +79,7 @@ Public Class wscotizacion
             transaccion.Commit()
 
             Dim id2 As Integer = id
-            result = "SUCCESS| COTIZACION GENERADA EXITOSAMENTE|" & CrearPDF(id2, ObtenerSucursal(usuario), usuario, idcliente, "COTIZACION")
+            result = "SUCCESS| COTIZACION GENERADA EXITOSAMENTE|" & CrearPDF(id2, ObtenerSucursal(usuario), usuario, idcliente, "COTIZACION", descuento)
 
 
 
@@ -94,8 +94,6 @@ Public Class wscotizacion
 
         Return result
     End Function
-
-
 
     Public Function Factura_ElectronicaDemo(ByVal serie As String) As String
 
@@ -120,7 +118,6 @@ Public Class wscotizacion
 
     End Function
 
-
     <WebMethod()>
     Public Function ObtenerSiguienteCorrelativo(ByVal serie As String) As String
         Dim SQL As String = "SELECT ISNULL(MAX(CAST(SUBSTRING(firma, 10, 25) As numeric)), 180000000000) + 1 As Siguiente FROM [ERPDEVLYNGT].[dbo].[ENC_FACTURA] WHERE Serie_Fact = '" & serie & "';"
@@ -136,15 +133,36 @@ Public Class wscotizacion
 
     End Function
 
+    <WebMethod()>
+    Public Function Reimprimir(ByVal idcotizacion As Integer) As String
+        Dim result As String = ""
+        Try
+            Dim SQL As String = "SELECT id_enc,USUARIO,Id_Clt,id_suc,ISNULL(observaciones,'SIN OBSERVACIONES') as observaciones,[Total_Descuento] FROM [ERPDEVLYNGT].[dbo].[ENC_COTIZACION] where id_enc = " & idcotizacion
+
+            Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+
+            For i = 0 To TablaEncabezado.Rows.Count - 1
+                result = "SUCCESS|" & CrearPDF(idcotizacion, TablaEncabezado.Rows(i).Item("id_suc"), TablaEncabezado.Rows(i).Item("USUARIO"), TablaEncabezado.Rows(i).Item("Id_Clt"), TablaEncabezado.Rows(i).Item("observaciones"), TablaEncabezado.Rows(i).Item("Total_Descuento"))
+            Next
+        Catch ex As Exception
+
+            result = "ERROR|" & ex.Message
+        End Try
+
+
+
+
+        Return result
+    End Function
 
     <WebMethod()>
-    Public Function CrearPDF(ByVal cotizacion As Integer, ByVal idsuc As Integer, ByVal usuario As String, ByVal idcliente As Integer, ByVal observacion As String) As String
+    Public Function CrearPDF(ByVal cotizacion As Integer, ByVal idsuc As Integer, ByVal usuario As String, ByVal idcliente As Integer, ByVal observaciones As String, ByVal descuento As Double) As String
         Dim result As String = ""
         Try
 
             Dim doc As Document = New iTextSharp.text.Document(iTextSharp.text.PageSize.LETTER, 5, 5, 5, 5)
             Dim datafecha As Date = Now
-            Dim nombredoc As String = "pdf\orden" & cotizacion & ".pdf"
+            Dim nombredoc As String = "pdf\cotizacion" & cotizacion & ".pdf"
             Dim pd As PdfWriter = PdfWriter.GetInstance(doc, New FileStream(Server.MapPath("~\vista\" & nombredoc), FileMode.Create))
             result = nombredoc
             doc.AddTitle("COIZACIÓN # " & cotizacion)
@@ -215,7 +233,7 @@ Public Class wscotizacion
             Celda.HorizontalAlignment = Element.ALIGN_CENTER
             Tabla.AddCell(Celda)
 
-            Celda = New PdfPCell(New Paragraph(cotizacion, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda = New PdfPCell(New Paragraph("#" & cotizacion, FontFactory.GetFont("Arial", 12, iTextSharp.text.Font.BOLD)))
             Celda.BorderWidth = 1
             Celda.BorderWidthBottom = 0
             Celda.BorderWidthTop = 0
@@ -439,6 +457,52 @@ Public Class wscotizacion
                 Next
             Next
 
+
+            Celda = New PdfPCell(New Paragraph(" ", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph("DESCUENTO", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(" ", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(Format(descuento, "##,##0.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.BorderWidthRight = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+            Celda = New PdfPCell(New Paragraph(" ", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda.BorderWidth = 1
+            Celda.BorderWidthTop = 0
+            Celda.Colspan = 0
+            Celda.HorizontalAlignment = Element.ALIGN_CENTER
+            Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
+            TablaDatos.AddCell(Celda)
+
+
             Celda = New PdfPCell(New Paragraph(" ", FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
             Celda.BorderWidth = 1
             Celda.BorderWidthTop = 0
@@ -466,7 +530,7 @@ Public Class wscotizacion
             Celda.BackgroundColor = New iTextSharp.text.BaseColor(195, 199, 200)
             TablaDatos.AddCell(Celda)
 
-            Celda = New PdfPCell(New Paragraph(Format(total, "##,##0.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
+            Celda = New PdfPCell(New Paragraph(Format(total - descuento, "##,##0.00"), FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.BOLD)))
             Celda.BorderWidth = 1
             Celda.BorderWidthTop = 0
             Celda.BorderWidthRight = 0
@@ -495,23 +559,12 @@ Public Class wscotizacion
             PARRAFO1.IndentationRight = 25.0F
             doc.Add(PARRAFO1)
 
-            Dim PARRAFO2 As Paragraph = New Paragraph(observacion, FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL))
+            Dim PARRAFO2 As Paragraph = New Paragraph(observaciones, FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL))
             PARRAFO2.Alignment = Element.ALIGN_JUSTIFIED
             PARRAFO2.SpacingAfter = 10.0F
             PARRAFO2.IndentationLeft = 25.0F
             PARRAFO2.IndentationRight = 25.0F
             doc.Add(PARRAFO2)
-
-
-
-            Dim PARRAFOFIRMA As Paragraph = New Paragraph("__________________________________________________", FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL))
-            PARRAFOFIRMA.Alignment = Element.ALIGN_CENTER
-            PARRAFOFIRMA.SpacingBefore = 25.0F
-            doc.Add(PARRAFOFIRMA)
-
-            PARRAFOFIRMA = New Paragraph("Firma de Autorización", FontFactory.GetFont("Arial", 10, iTextSharp.text.Font.NORMAL))
-            PARRAFOFIRMA.Alignment = Element.ALIGN_CENTER
-            doc.Add(PARRAFOFIRMA)
 
 
             doc.Close()

@@ -11,7 +11,7 @@
             dataType: "json",
             success: function (data) {
                 if (data.d != "e") {
-                    location.href = '/ERP2/vista/principal.html';
+                    location.href = '/vista/principal.html';
                     document.cookie = "us=" + base64(user);
                 }
                 else {

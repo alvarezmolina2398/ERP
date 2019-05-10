@@ -7,7 +7,7 @@
         }
     });
 });
-
+var user = window.atob(getCookie("us"));
 var datosAutocomplete = [];
 var datosAutocomplete2 = [];
 //consume el ws para obtener los datos
@@ -44,8 +44,72 @@ var totalfac = 0;
 
 
 
+function UrlExists(url) {
+    var http = new XMLHttpRequest();
+    http.open('HEAD', url, false);
+    http.send();
+    return http.status != 404;
+} 
+
 $(function () {
-    var user = window.atob(getCookie("us"));
+    $('[data-toggle="tooltip"]').tooltip();
+    $('#cod-reimprimir').val(null);
+
+    //evento enter en producto
+    $('#cod-reimprimir').keypress(function (e) {
+        var keycode = (e.keyCode ? e.keyCode : e.which);
+        if (keycode == 13 && $(this).length > 0) {
+
+            $.ajax({
+                url: 'wsorden_compra.asmx/Reimprimir',
+                data: '{orden : ' + $(this).val()  +', usuario : "'+ user +'" }',
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                success: function (msg) {
+
+                    var arr = msg.d.split('|');
+
+
+                    if (arr[0] == 'SUCCESS') {
+
+                        if (!UrlExists(arr[1])) {
+                            $('.jq-toast-wrap').remove();
+                            $.toast({
+                                heading: '¡ERROR!',
+                                text: "ESTA ORDEN DE COMPRA NO EXISTE",
+                                position: 'bottom-right',
+                                showHideTransition: 'plain',
+                                icon: 'error',
+                                stack: false
+                            });
+                        } else {
+                            
+                            window.open(arr[1], '_blank');
+                        }
+
+                    } else {
+
+                        $('.jq-toast-wrap').remove();
+                        $.toast({
+                            heading: '¡ERROR!',
+                            text: arr[1],
+                            position: 'bottom-right',
+                            showHideTransition: 'plain',
+                            icon: 'error',
+                            stack: false
+                        });
+                    }   
+                }
+            });
+
+
+
+            
+        }
+    });
+
+
+    
     cargarTipoPedido();
     CargarMonedas();
     cagarSucursal();
