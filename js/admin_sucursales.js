@@ -400,7 +400,7 @@ function validarForm() {
 
 
     //valida el correlativo
-    if (correlativo.val() == 0 && correlativoCopia.val()) {
+    if (correlativo.val() == 0 && correlativoCopia.val() == 0) {
         correlativo.focus();
         $('#bt-guardar').removeAttr('disabled', true);
         $('#bt-cancelar').removeAttr('disabled', true);

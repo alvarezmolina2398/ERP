@@ -18,7 +18,7 @@ Public Class wstraslados
     <WebMethod()>
     Public Function ObtenerExistenciasPorBodega(ByVal bodega As Integer) As IList(Of productos)
 
-        Dim sql As String = "  SELECT a.id_art, (e.Existencia_Deta_Art)  - (SELECT isnull(sum(d.cantidad_articulo),0)  FROM [ERPDEVLYNGT].[dbo].[DETA_RESERVA] d WHERE d.Id_Bod = " & bodega & " and d.id_Art =  a.id_art and estado = 1) as existencia, a.Des_Art, a.cod_Art, a.precio1  FROM [ERPDEVLYNGT].[dbo].[Existencias] e INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo] a on a.id_art = e.Id_Art WHERE  e.Existencia_Deta_Art > 0  and Id_Bod = " & bodega
+        Dim sql As String = "  SELECT a.id_art, (e.Existencia_Deta_Art)  - (SELECT isnull(sum(d.cantidad_articulo),0)  FROM [ERPDEVLYNGT].[dbo].[DETA_RESERVA] d WHERE d.Id_Bod = " & bodega & " and d.id_Art =  a.id_art and estado = 1) as existencia, a.Des_Art, a.cod_Art, a.precio1  FROM [ERPDEVLYNGT].[dbo].[Existencias] e INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo] a on a.id_art = e.Id_Art WHERE Id_Bod = " & bodega
 
         Dim result As List(Of productos) = New List(Of productos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)

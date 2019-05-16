@@ -13,7 +13,7 @@ Public Class wsadmin_empresas
 
     <WebMethod()>
     Public Function ObtenerDatos() As List(Of datos)
-        Dim SQL As String = "SELECT [id_empresa],[nombre],[nombre_comercial],[id_depto],[id_municipio],[direccion],[tel1],[actividad],[tipo_pago],[nit],[no_establecimiento],[registro_merca],[no_registro_merca],[f_constitucion_cia],[fecha_registro_mercantil]  FROM [ERPDEVLYNGT].[dbo].[ENCA_CIA] where estado  = 1"
+        Dim SQL As String = "SELECT [id_empresa],[nombre],[nombre_comercial],[id_depto],[id_municipio],[direccion],[tel1],[actividad],[tipo_pago],[nit],[no_establecimiento],[registro_merca],[no_registro_merca],convert(varchar,f_constitucion_cia,103) as f_constitucion_cia ,convert(varchar,fecha_registro_mercantil,103) as fecha_registro_mercantil   FROM [ERPDEVLYNGT].[dbo].[ENCA_CIA] where estado  = 1"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)

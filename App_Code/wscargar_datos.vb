@@ -159,7 +159,7 @@ Public Class wscargar_datos
     Public Function cargarActividades() As List(Of datos)
 
         Dim result As List(Of datos) = New List(Of datos)()
-        Dim StrEncabezado As String = "select id_actividad, descripcion from dbo.ACTIVIDADES_CIA order by id_actividad"
+        Dim StrEncabezado As String = "select id_actividad, descripcion from dbo.ACTIVIDADES_CIA WHERE estado = 1 order by id_actividad"
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(StrEncabezado)
 
         For i = 0 To TablaEncabezado.Rows.Count - 1

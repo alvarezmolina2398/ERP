@@ -14,7 +14,7 @@ Public Class wsadmin_correlativos
     'accion para obtener los datos de correlativos 
     <WebMethod()>
     Public Function ObtenerDatos() As List(Of datos)
-        Dim SQL As String = "SELECT c.id_correlativo,c.Autorizacion,c.fecha,c.Series,c.Fact_inic,c.Fact_fin,c.Status,c.Corr_Act,c.Caja,c.Doc,c.Establecimiento,e.id_empresa,e.nombre " &
+        Dim SQL As String = "SELECT c.id_correlativo,c.Autorizacion,convert(varchar,c.fecha,103) as fecha ,c.Series,c.Fact_inic,c.Fact_fin,c.Status,c.Corr_Act,c.Caja,c.Doc,c.Establecimiento,e.id_empresa,e.nombre " &
             " FROM [ERPDEVLYNGT].[dbo].[Correlativos] c INNER JOIN [ERPDEVLYNGT].[dbo].[ENCA_CIA] e on e.id_empresa = c.id_empresa where c.Status = 1 and e.estado = 1"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
