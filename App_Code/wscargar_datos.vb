@@ -13,7 +13,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarDepartamentos() As List(Of datos)
-        Dim SQL As String = "SELECT ID_DEPTO,DESC_DEPTO  FROM [ERPDEVLYNGT].[dbo].[DEPARTAMENTOS]"
+        Dim SQL As String = "SELECT ID_DEPTO,DESC_DEPTO  FROM  [DEPARTAMENTOS]"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -34,7 +34,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarTiposPago() As List(Of datos)
-        Dim SQL As String = "SELECT [idtipoPago],[descripcion] FROM [ERPDEVLYNGT].[dbo].[TipoPago] where [estado] = 1"
+        Dim SQL As String = "SELECT [idtipoPago],[descripcion] FROM  [TipoPago] where [estado] = 1"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -55,7 +55,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarTiposTarjetas() As List(Of datos)
-        Dim SQL As String = "SELECT  [idTipoTarjeta],[tipoTarjeta] FROM [ERPDEVLYNGT].[dbo].[TIPOTARJETA] WHERE [estado] = 1"
+        Dim SQL As String = "SELECT  [idTipoTarjeta],[tipoTarjeta] FROM  [TIPOTARJETA] WHERE [estado] = 1"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -76,7 +76,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function validarProducto(id As Integer) As Integer
-        Dim SQL As String = "select COUNT(*) as datos from dbo.Articulo where id_art = '" & id & "'"
+        Dim SQL As String = "select COUNT(*) as datos from  Articulo where id_art = '" & id & "'"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -92,11 +92,9 @@ Public Class wscargar_datos
         Return contador
     End Function
 
-
-
     <WebMethod()>
     Public Function cargarProveedor() As List(Of datos)
-        Dim SQL As String = "SELECT [Id_PRO], [nit_pro],[Nom_pro] FROM [ERPDEVLYNGT].[dbo].[PROVEEDOR]"
+        Dim SQL As String = "SELECT [Id_PRO], [nit_pro],[Nom_pro] FROM  [PROVEEDOR]"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -117,7 +115,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarTipoPedido() As List(Of datos)
-        Dim SQL As String = "SELECT  [ID_pedido],[DESCRIPCION]  FROM [ERPDEVLYNGT].[dbo].[TIPO_pedido]"
+        Dim SQL As String = "SELECT  [ID_pedido],[DESCRIPCION]  FROM  [TIPO_pedido]"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -137,7 +135,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarMarcas() As List(Of datos)
-        Dim SQL As String = "SELECT [id_marca],[nom_marca] FROM [ERPDEVLYNGT].[dbo].[Marcas] WHERE estado = 1"
+        Dim SQL As String = "SELECT [id_marca],[nom_marca] FROM  [Marcas] WHERE estado = 1"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -159,7 +157,7 @@ Public Class wscargar_datos
     Public Function cargarActividades() As List(Of datos)
 
         Dim result As List(Of datos) = New List(Of datos)()
-        Dim StrEncabezado As String = "select id_actividad, descripcion from dbo.ACTIVIDADES_CIA WHERE estado = 1 order by id_actividad"
+        Dim StrEncabezado As String = "select id_actividad, descripcion from  ACTIVIDADES_CIA WHERE estado = 1 order by id_actividad"
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(StrEncabezado)
 
         For i = 0 To TablaEncabezado.Rows.Count - 1
@@ -175,7 +173,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarColores() As List(Of datos)
-        Dim SQL As String = "SELECT [idColor],[descripcionColor] FROM [ERPDEVLYNGT].[dbo].[COLOR]"
+        Dim SQL As String = "SELECT [idColor],[descripcionColor] FROM  [COLOR]"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -194,10 +192,9 @@ Public Class wscargar_datos
     End Function
 
 
-
     <WebMethod()>
     Public Function cargarClasificacionCliente() As List(Of datos)
-        Dim SQL As String = "SELECT [id_clasif],[Clasificacion]FROM [ERPDEVLYNGT].[dbo].[Clasificacion_Cliente]"
+        Dim SQL As String = "SELECT [id_clasif],[Clasificacion]FROM  [Clasificacion_Cliente]"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -217,7 +214,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarTipo() As List(Of datos)
-        Dim SQL As String = "SELECT  [idTipoLente],[tipoLente] FROM [ERPDEVLYNGT].[dbo].[TIPOARTICULO] WHERE estado = 1"
+        Dim SQL As String = "SELECT  [idTipoLente],[tipoLente] FROM  [TIPOARTICULO] WHERE estado = 1"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -237,7 +234,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarClasificacion() As List(Of datos)
-        Dim SQL As String = "SELECT [Id_Tipo_Art],[Nom_Tipo_Art] FROM [ERPDEVLYNGT].[dbo].[clasificacionarticulo] where estado = 1"
+        Dim SQL As String = "SELECT [Id_Tipo_Art],[Nom_Tipo_Art] FROM  [clasificacionarticulo] where estado = 1"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -258,7 +255,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function CargarSolicitante(ByVal cia As String) As List(Of datos)
-        Dim sql As String = "select u.id, (u.nombres + ' ' + u.apellidos) empleado from usuario u  where u.id_depto_laboral = " & cia & " order by empleado,id "
+        Dim sql As String = "SELECT [id],[nombre],[correo],[estado] ,[id_dep] FROM [empleado] where estado = 1 and  id_dep = " & cia
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)
 
@@ -267,7 +264,7 @@ Public Class wscargar_datos
             For ii = 0 To 1
                 Dim Elemento As New datos
                 Elemento.id = TablaEncabezado.Rows(i).Item("id")
-                Elemento.descripcion = TablaEncabezado.Rows(i).Item("empleado")
+                Elemento.descripcion = TablaEncabezado.Rows(i).Item("nombre")
                 result.Add(Elemento)
                 ii = ii + 1
             Next
@@ -279,7 +276,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarDepartamentoLaboral(ByVal id As Integer) As List(Of datos)
-        Dim SQL As String = "SELECT  [id_empresa],[id_departamento],[descripcion]  FROM [ERPDEVLYNGT].[dbo].[DEPTO_LAB] WHERE id_empresa = " & id
+        Dim SQL As String = "SELECT  [id_empresa],[id_departamento],[descripcion]  FROM  [DEPTO_LAB] WHERE id_empresa = " & id
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -299,7 +296,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarMunicipiosPorDep(ByVal dep As Integer) As List(Of datos)
-        Dim SQL As String = "SELECT ID_MUNI,DESCRIPCION FROM [ERPDEVLYNGT].[dbo].[MUNICIPIOS] WHERE ID_DEPTO = " & dep
+        Dim SQL As String = "SELECT ID_MUNI,DESCRIPCION FROM  [MUNICIPIOS] WHERE ID_DEPTO = " & dep
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -319,7 +316,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarSubMarcasporMarc(ByVal marca As Integer) As List(Of datos)
-        Dim SQL As String = "SELECT [idSubMarca],[descSubMarca] FROM [ERPDEVLYNGT].[dbo].[SUB_MARCA] WHERE estado = 1 AND  idMarca = " & marca
+        Dim SQL As String = "SELECT [idSubMarca],[descSubMarca] FROM  [SUB_MARCA] WHERE estado = 1 AND  idMarca = " & marca
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -341,7 +338,7 @@ Public Class wscargar_datos
 
     <WebMethod()>
     Public Function cargarSubClasificacionAtr(ByVal art As Integer) As List(Of datos)
-        Dim SQL As String = "SELECT  [idSubClasiArt],[descSubClasi] FROM [ERPDEVLYNGT].[dbo].[SUB_CLASIFICACION] WHERE Id_Tipo_Art = " & art
+        Dim SQL As String = "SELECT  [idSubClasiArt],[descSubClasi] FROM  [SUB_CLASIFICACION] WHERE Id_Tipo_Art = " & art
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)

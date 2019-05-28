@@ -16,7 +16,7 @@ Public Class wsrepkardex
         Dim result As List(Of [Datos]) = New List(Of Datos)()
 
 
-        Dim StrEncabezado As String = "EXECUTE dbo.VeSaldosAticuloKardex @id_art = " & prod & ", @idBod = " & bod & ", @fecha1 = '" & fechaIni & "', @fecha2 = '" & fechaFin & "'"
+        Dim StrEncabezado As String = "EXECUTE  VeSaldosAticuloKardex @id_art = " & prod & ", @idBod = " & bod & ", @fecha1 = '" & fechaIni & "', @fecha2 = '" & fechaFin & "'"
         Dim TablaEncabezado As DataTable = manipular.Login(StrEncabezado)
 
 

@@ -759,7 +759,7 @@ Public Class manipular
     '    'Dim dt As DataTable
     '    'Dim dt2 As DataTable
     '    'Try
-    '    '    dt = Me.Datos("select * from dbo.V_Enc_Factura where [ID] = " & id_enc & " and caja = " & Caja & " and doc = 'Factura'")
+    '    '    dt = Me.Datos("select * from  V_Enc_Factura where [ID] = " & id_enc & " and caja = " & Caja & " and doc = 'Factura'")
 
     '    '    If dt.Rows.Count > 0 Then
 
@@ -934,7 +934,7 @@ Public Class manipular
     '    'Dim dt As DataTable
     '    'Dim dt2 As DataTable
     '    'Try
-    '    '    dt = Me.Datos("select * from dbo.V_Enc_Factura where [ID] = " & id_enc & " and caja = " & Caja & " and doc = 'Factura Copia'")
+    '    '    dt = Me.Datos("select * from  V_Enc_Factura where [ID] = " & id_enc & " and caja = " & Caja & " and doc = 'Factura Copia'")
 
     '    '    If dt.Rows.Count > 0 Then
 
@@ -1113,7 +1113,7 @@ Public Class manipular
     '    'Dim dt As DataTable
     '    'Dim dt2 As DataTable
     '    'Try
-    '    '    dt = Me.Datos("select * from dbo.V_Enc_Factura where [ID] = " & id_enc & " and caja = " & Caja & " and doc = 'Factura Copia'")
+    '    '    dt = Me.Datos("select * from  V_Enc_Factura where [ID] = " & id_enc & " and caja = " & Caja & " and doc = 'Factura Copia'")
 
     '    '    If dt.Rows.Count > 0 Then
 
@@ -1324,7 +1324,7 @@ Public Class manipular
     '    Dim dt As DataTable
     '    Try
 
-    '        dt = Me.Datos("select * from dbo.V_Notas_Credito where [ID_enc] = " & id_enc & " and caja = " & caja & " and doc = 'Nota Credito'")
+    '        dt = Me.Datos("select * from  V_Notas_Credito where [ID_enc] = " & id_enc & " and caja = " & caja & " and doc = 'Nota Credito'")
 
     '        If dt.Rows.Count > 0 Then
 
@@ -1431,7 +1431,7 @@ Public Class manipular
     'End Function
 
     'Public Function CreaPOS(ByVal id_enc As Integer, ByVal caja As Integer) As String
-    '    Dim dt As DataTable = Me.Datos("select * from dbo.V_Enc_Factura where [ID] = " & id_enc & " and doc='Factura' and caja = " & caja)
+    '    Dim dt As DataTable = Me.Datos("select * from  V_Enc_Factura where [ID] = " & id_enc & " and doc='Factura' and caja = " & caja)
     '    Dim dt2 As DataTable = Me.Datos("select * from v_det_factura where ID_E = " & id_enc)
     '    '******************************CREACION DEL ARCHIVO POS***********************************'
     '    Dim ArchivoPos As String = "factura" & dt.Rows(0).Item("Numero").ToString & ".pos"

@@ -31,13 +31,60 @@
     <!-- Bootstra tour CSS -->
     <link rel="stylesheet" href="../estilo/bootstrap_tour/css/bootstrap-tour-standalone.css" />
 
+    <script>
+
+        function esNumInt(ev, el) {
+            /* ev: evento; el: elemento; */
+            tecla = (document.all) ? ev.keyCode : ev.which;
+
+            // Permite un solo punto decimal
+            if (el.value.indexOf('.') == -1 ? tecla == 46 : false) { return false; }
+
+            // Permite números negativos (después de escribir un número)
+            //if (tecla == 45 && el.value !== '') { el.value = (-1) * el.value; }
+
+            // Permite tecla de retroceso (borrar)
+            if (tecla == 8) { return true; }
+
+            // Permite tecla Tab
+            if (tecla == 9) { return true; }
+
+            // Patrón de entrada: solo acepta numeros positivos
+            patron = /[0-9]/;
+            tecla_fin = String.fromCharCode(tecla);
+            return patron.test(tecla_fin);
+        }
+
+        function esNumDeci(ev, el) {
+            /* ev: evento; el: elemento; */
+            tecla = (document.all) ? ev.keyCode : ev.which;
+
+            // Permite un solo punto decimal
+            if (el.value.indexOf('.') == -1 ? tecla == 46 : false) { return true; }
+
+            // Permite números negativos (después de escribir un número)
+            //if (tecla == 45 && el.value !== '') { el.value = (-1) * el.value; }
+
+            // Permite tecla de retroceso (borrar)
+            if (tecla == 8) { return true; }
+
+            // Permite tecla Tab
+            if (tecla == 9) { return true; }
+
+            // Patrón de entrada: solo acepta numeros positivos
+            patron = /[0-9]/;
+            tecla_fin = String.fromCharCode(tecla);
+            return patron.test(tecla_fin);
+        }
+
+    </script>
 
     <!-- jvector map CSS -->
     <link rel="stylesheet" href="../estilo/jquery-jvectormap/jquery-jvectormap-2.0.3.css" />
     <link rel="stylesheet" href="../estilo/EasyAutocomplete-1.3.5/easy-autocomplete.css" />
 
     <!-- app CSS -->
-    <link id="theme" rel="stylesheet" href="../css/dark-bluesidebar.css" type="text/css">
+    <link id="theme" rel="stylesheet" href="../css/dark-bluesidebar.css" type="text/css" />
     <!-- dataTable CSS -->
     <link rel="stylesheet" href="../estilo/DataTables-1.10.18/css/dataTables.bootstrap4.min.css" />
     <title>Soluciones UN</title>
@@ -124,7 +171,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <label for="orden"># Orden de Compra: </label>
-                                            <input id="orden" type="number" class="form-control" placeholder="Orden " autocomplete="off" />
+                                            <input id="orden"   type="text"  novalidate="true"  step="any" min="1"  onkeypress="return esNumInt(event,this)" onfocus="this.select();"  class="form-control" placeholder="Orden " autocomplete="off" />
                                             <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                             <div class="valid-feedback">¡Dato Correcto!</div>
                                         </div>
@@ -136,7 +183,7 @@
                                         </div>
                                         <div class="col-md-3">
                                             <label for="fac"> No. Factura: <span class="text-danger">*</span></label>
-                                            <input id="fac" type="number" class="form-control" placeholder="Factura " autocomplete="off" />
+                                            <input id="fac"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="Factura " autocomplete="off" />
                                             <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                             <div class="valid-feedback">¡Dato Correcto!</div>
                                         </div>
@@ -199,7 +246,7 @@
                                         </div>
                                         <div class="col-md-12">
                                             <label for="observacion">Observaciones:</label>
-                                            <textarea id="observacion" type="number" class="form-control" placeholder="Observacion " autocomplete="off" rows="3"></textarea>
+                                            <textarea id="observacion"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="Observacion " autocomplete="off" rows="3"></textarea>
                                             <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                             <div class="valid-feedback">¡Dato Correcto!</div>
                                             <br />
@@ -215,13 +262,13 @@
                                         </div>
                                         <div class="col-md-2">
                                             <label for="cantidad">Cantidad:</label>
-                                            <input id="cantidad" type="number" class="form-control" placeholder="cantidad " autocomplete="off" />
+                                            <input id="cantidad"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="cantidad " autocomplete="off"  onkeypress="return esNumInt(event,this)" onfocus="this.select();"/>
                                             <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                             <div class="valid-feedback">¡Dato Correcto!</div>
                                         </div>
                                         <div class="col-md-2">
                                             <label for="precio">Precio:</label>
-                                            <input id="precio" type="number" class="form-control" placeholder="Precio " autocomplete="off" />
+                                            <input id="precio"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="Precio "  onkeypress="return esNumDeci(event,this)" onfocus="this.select();" autocomplete="off" />
                                             <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                             <div class="valid-feedback">¡Dato Correcto!</div>
                                             <br />
@@ -335,25 +382,25 @@
                                     </div>
                                     <div class="col-md-3">
                                         <label for="fleteext">Flete(M. local): <span class="text-danger"> * </span> </label>
-                                        <input id="fleteext" type="number" class="form-control" placeholder="" autocomplete="off"  onblur="obtenerTotalCosto()" />
+                                        <input id="fleteext"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="" autocomplete="off"  onblur="obtenerTotalCosto()" />
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="Seguroext">Seguro(M. Local) <span class="text-danger"> * </span> </label>
-                                        <input id="Seguroext" type="number" class="form-control" placeholder="" autocomplete="off" onblur="obtenerTotalCosto()" />
+                                        <input id="Seguroext"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="" autocomplete="off" onblur="obtenerTotalCosto()" />
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="otrosgastosext">Otros gastos(M. Local) <span class="text-danger"> * </span> </label>
-                                        <input id="otrosgastosext" type="number" class="form-control" placeholder="" autocomplete="off" onblur="obtenerTotalCosto()" />
+                                        <input id="otrosgastosext"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="" autocomplete="off" onblur="obtenerTotalCosto()" />
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="Credito">Credito S/compra(M. Local) <span class="text-danger"> * </span> </label>
-                                        <input id="Credito" type="number" class="form-control" placeholder="" autocomplete="off"  onblur="obtenerTotalCosto()"/>
+                                        <input id="Credito"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="" autocomplete="off"  onblur="obtenerTotalCosto()"/>
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>
@@ -362,43 +409,43 @@
                                     </div>
                                     <div class="col-md-3">
                                         <label for="Iva">Iva (M. local) * <span class="text-danger"> * </span> </label>
-                                        <input id="Iva" type="number" class="form-control" placeholder="" autocomplete="off"  onblur="obtenerTotalImpusto()"/>
+                                        <input id="Iva"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="" autocomplete="off"  onblur="obtenerTotalImpusto()"/>
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="fletelocal">Flete local(M. Local) <span class="text-danger"> * </span> </label>
-                                        <input id="fletelocal" type="number" class="form-control" placeholder="" autocomplete="off"  onblur="obtenerTotalCosto()" />
+                                        <input id="fletelocal"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="" autocomplete="off"  onblur="obtenerTotalCosto()" />
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="agenteaduana">Agente aduanal(M. Local) * <span class="text-danger"> * </span> </label>
-                                        <input id="agenteaduana" type="number" class="form-control" placeholder="" autocomplete="off"  onblur="obtenerTotalCosto()" />
+                                        <input id="agenteaduana"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="" autocomplete="off"  onblur="obtenerTotalCosto()" />
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="Almacenaje">Almacenaje(M. Local) <span class="text-danger"> * </span> </label>
-                                        <input id="Almacenaje" type="number" class="form-control" placeholder="" autocomplete="off" onblur="obtenerTotalCosto()" />
+                                        <input id="Almacenaje"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="" autocomplete="off" onblur="obtenerTotalCosto()" />
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="Arancel">Arancel (M. local) <span class="text-danger"> * </span> </label>
-                                        <input id="Arancel" type="number" class="form-control" placeholder="" autocomplete="off" onblur="obtenerTotalImpusto()" />
+                                        <input id="Arancel"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="" autocomplete="off" onblur="obtenerTotalImpusto()" />
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="tasacambio">Tasa de cambio  <span class="text-danger"> * </span> </label>
-                                        <input id="tasacambio" type="number" class="form-control" placeholder="" autocomplete="off"  />
+                                        <input id="tasacambio"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="" autocomplete="off"  />
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>
                                     <div class="col-md-3">
                                         <label for="Poliza">Poliza No.  <span class="text-danger"> * </span> </label>
-                                        <input id="Poliza" type="number" class="form-control" placeholder="Orden " autocomplete="off" />
+                                        <input id="Poliza"   type="text"  novalidate="true"  step="any" min="1" class="form-control" placeholder="Orden " autocomplete="off" />
                                         <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                         <div class="valid-feedback">¡Dato Correcto!</div>
                                     </div>

@@ -44,7 +44,7 @@ Public Class wsclasificacionArt
     <WebMethod()> _
     Public Function insertar(ByVal nombre As String, ByVal descripcion As String, ByVal observacion As String) As Boolean
         Dim result As Boolean = False
-        Dim strinsert As String = "insert into dbo.clasificacionarticulo " &
+        Dim strinsert As String = "insert into  clasificacionarticulo " &
                                     "(nom_tipo_art,des_tipo_art,observ_tipo_art,estado) " &
                                     " values " &
                                     " ('" & nombre & "', '" & descripcion & "', '" & observacion & "',1)"

@@ -1,4 +1,7 @@
-﻿//llamada a metodos necesarios para el sistema
+﻿
+var usuario = window.atob(getCookie("us"));
+
+//llamada a metodos necesarios para el sistema
 $(function () {
     //llamada a los datos para que se ejecuten al cargarse la pagina
     mostrarDatos();
@@ -62,10 +65,10 @@ $(function () {
             var url1 = ''
             if (id != 0) {
                 url1 = 'Actualizar'
-                data1 = '{ serie : "'+ descripcion.val() +'",  autorizacion : "'+ autorizacion.val() +'",  empresa :  "'+ company.val() +'",  inicio : '+ inicio.val() +',  final : '+final.val() +',  fecha : "'+ fecha.val() +'",  actual : '+ actual.val() +',  doc : '+ doc.val() +',  establecimiento: '+ establecimiento.val() +', caja : '+ caja.val() +', id: ' + id + '}';
+                data1 = '{ serie : "' + descripcion.val() + '",  autorizacion : "' + autorizacion.val() + '",  empresa :  "' + company.val() + '",  inicio : ' + inicio.val() + ',  final : ' + final.val() + ',  fecha : "' + fecha.val() + '",  actual : ' + actual.val() + ',  doc : ' + doc.val() + ',  establecimiento: ' + establecimiento.val() + ', caja : ' + caja.val() + ', id: ' + id + ', user : "' + usuario +'"}';
             } else {
                 url1 = 'Insertar'
-                data1 = '{ serie : "' + descripcion.val() + '",  autorizacion : "' + autorizacion.val() + '",  empresa :  "' + company.val() + '",  inicio : ' + inicio.val() + ',  final : ' + final.val() + ',  fecha : "' + fecha.val() + '",  actual : ' + actual.val() + ',  doc : ' + doc.val() + ',  establecimiento: ' + establecimiento.val() + ', caja : ' + caja.val() + '}';
+                data1 = '{ serie : "' + descripcion.val() + '",  autorizacion : "' + autorizacion.val() + '",  empresa :  "' + company.val() + '",  inicio : ' + inicio.val() + ',  final : ' + final.val() + ',  fecha : "' + fecha.val() + '",  actual : ' + actual.val() + ',  doc : ' + doc.val() + ',  establecimiento: ' + establecimiento.val() + ', caja : ' + caja.val() + ', user : "' + usuario +'"}';
             }
 
             //consume el ws para obtener los datos
@@ -129,7 +132,7 @@ $(function () {
         //consume el ws para obtener los datos
         $.ajax({
             url: 'wsadmin_correlativos.asmx/Inhabilitar',
-            data: '{id: ' + id + '}',
+            data: '{id : ' + id + ', usuario : "'+ usuario +'"}',
             type: 'POST',
             contentType: 'application/json; charset=utf-8',
             beforeSend: function () {
@@ -591,5 +594,24 @@ function cargarCompanias() {
     });
 
 }
+
+
+//metodo para obtener la sesion
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
 
 

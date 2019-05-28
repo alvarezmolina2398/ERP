@@ -15,7 +15,7 @@ Public Class wsadmin_clientes
     <WebMethod()>
     Public Function ObtenerDatos() As List(Of datos)
         Dim SQL As String = "SELECT c.Id_Clt,c.nit_clt,c.Nom_clt,c.Tel_Clt,c.Dire_Clt,c.id_clasif,c.id_dep,c.id_muni,c.contacto1,c.contacto2,c.contacto3,c.Fax_Clt,c.Descuento_Porc,c.Limite_Credito,c.Dias_Credito,c.Correo_Clt,c.Observ_Clt " &
-            "FROM [ERPDEVLYNGT].[dbo].[CLiente] c " &
+            "FROM  [CLiente] c " &
             "WHERE c.estado = 1;"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
@@ -121,7 +121,7 @@ Public Class wsadmin_clientes
 
     <WebMethod()>
     Public Function ExisteNit(ByVal nit As String) As Boolean
-        Dim SQL As String = "SELECT count(Id_Clt) as cantidad FROM [ERPDEVLYNGT].[dbo].[CLiente] where nit_clt = '" & nit & "';"
+        Dim SQL As String = "SELECT count(Id_Clt) as cantidad FROM  [CLiente] where nit_clt = '" & nit & "';"
 
         Dim result As Boolean = False
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -147,7 +147,7 @@ Public Class wsadmin_clientes
     <WebMethod()>
     Public Function Inhabilitar(ByVal id As Integer) As String
         'consulta sql
-        Dim sql As String = "UPDATE [ERPDEVLYNGT].[dbo].[CLiente] set estado = 0 where Id_Clt = " & id
+        Dim sql As String = "UPDATE  [CLiente] set estado = 0 where Id_Clt = " & id
 
 
         Dim result As String = ""

@@ -16,7 +16,7 @@ Public Class wssubmarcas
 
         'enviar empresa
         Dim result As List(Of [Datos]) = New List(Of Datos)()
-        Dim StrEncabezado As String = "SELECT s.idSubMarca as sm, s.idMarca as idm, s.descSubMarca as descripcion, m.nom_marca as marca FROM ERPDEVLYNGT.dbo.SUB_MARCA s JOIN ERPDEVLYNGT.dbo.Marcas m on m.id_marca = s.idMarca WHERE s.estado = 1 and m.estado = 1"
+        Dim StrEncabezado As String = "SELECT s.idSubMarca as sm, s.idMarca as idm, s.descSubMarca as descripcion, m.nom_marca as marca FROM  SUB_MARCA s JOIN  Marcas m on m.id_marca = s.idMarca WHERE s.estado = 1 and m.estado = 1"
         Dim TablaEncabezado As DataTable = manipular.Login(StrEncabezado)
 
         For i = 0 To TablaEncabezado.Rows.Count - 1

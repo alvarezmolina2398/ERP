@@ -37,8 +37,8 @@ Public Class wsventasinrecibo
             Dim totalsiniva As Double = total / 1.12
             Dim iva As Double = totalsiniva * 0.12
 
-            Dim empresa As String = "SELECT id_empresa  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
-            Dim sucursal As String = "SELECT id_sucursal  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
+            Dim empresa As String = "SELECT id_empresa  FROM  [USUARIO] where USUARIO = '" & usuario & "'"
+            Dim sucursal As String = "SELECT id_sucursal  FROM  [USUARIO] where USUARIO = '" & usuario & "'"
 
             'INSERCION DE LA FACTURA
             Dim str1 As String = "INSERT INTO [dbo].[ENCA_RESERVA] ([id_empresa],[USUARIO],[Fecha] ,[Total_factura],[Iva_factura],[Total_sin_iva],[Total_descuento],[id_Ctl],[dias_cred],[id_suc],[estado]) " &
@@ -62,7 +62,7 @@ Public Class wsventasinrecibo
                 Dim ivadesc As Double = totalsinivaDesc * 0.12
 
                 Dim str2 As String = "INSERT INTO [dbo].[DETA_RESERVA]([id_enc],[cantidad_articulo],[Precio_Unit_Articulo],[Total] ,[Descuento],[Iva],[Total_sin_iva],[id_Art] ,[costoPromedio] ,[Id_Bod],[estado]) " &
-                    "VALUES(" & id & "," & item.cantidad & "," & item.precio & "," & (item.cantidad * item.precio) & ",0.00," & Math.Round(ivadesc, 2) & "," & Math.Round(totalsinivaDesc, 2) & "," & item.id & ", ROUND((select CONVERT(varchar,costo_art) from [ERPDEVLYNGT].[dbo].[Articulo] where id_art = " & item.id & "),2)," & item.bodega & ",1);"
+                    "VALUES(" & id & "," & item.cantidad & "," & item.precio & "," & (item.cantidad * item.precio) & ",0.00," & Math.Round(ivadesc, 2) & "," & Math.Round(totalsinivaDesc, 2) & "," & item.id & ", ROUND((select CONVERT(varchar,costo_art) from  [Articulo] where id_art = " & item.id & "),2)," & item.bodega & ",1);"
 
                 comando.CommandText = str2
                 comando.ExecuteNonQuery()
@@ -88,23 +88,19 @@ Public Class wsventasinrecibo
 
     <WebMethod()>
     Public Function obtenerFacturas(ByVal idcliente As Integer) As List(Of facturas)
-        Dim sql = "SELECT id_enc ,USUARIO,(convert(varchar,Fecha,103)+ ' ' +convert(varchar,Fecha,108)) as fecha,Total_factura,Total_descuento FROM [ERPDEVLYNGT].[dbo].[ENCA_RESERVA] WHERE estado = 1"
+        Dim sql = "SELECT id_enc ,USUARIO,(convert(varchar,Fecha,103)+ ' ' +convert(varchar,Fecha,108)) as fecha,Total_factura,Total_descuento FROM  [ENCA_RESERVA] WHERE estado = 1 and id_Ctl = " & idcliente
 
         Dim result As List(Of facturas) = New List(Of facturas)()
-        Dim StrEncabezado As String = "SELECT * FROM COLOR WHERE estado = 1 "
-        Dim TablaEncabezado As DataTable = manipular.Login(sql)
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)
 
         For i = 0 To TablaEncabezado.Rows.Count - 1
-            For ii = 0 To 1
-                Dim Elemento As New facturas
-                Elemento.codigo = TablaEncabezado.Rows(i).Item("id_enc")
-                Elemento.fecha = TablaEncabezado.Rows(i).Item("fecha").ToString
-                Elemento.valor = TablaEncabezado.Rows(i).Item("Total_factura")
-                Elemento.descuento = TablaEncabezado.Rows(i).Item("Total_descuento")
-                Elemento.usuario = TablaEncabezado.Rows(i).Item("USUARIO").ToString
-                result.Add(Elemento)
-                ii = ii + 1
-            Next
+            Dim Elemento As New facturas
+            Elemento.codigo = TablaEncabezado.Rows(i).Item("id_enc")
+            Elemento.fecha = TablaEncabezado.Rows(i).Item("fecha").ToString
+            Elemento.valor = TablaEncabezado.Rows(i).Item("Total_factura")
+            Elemento.descuento = TablaEncabezado.Rows(i).Item("Total_descuento")
+            Elemento.usuario = TablaEncabezado.Rows(i).Item("USUARIO").ToString
+            result.Add(Elemento)
         Next
 
         Return result
@@ -144,11 +140,11 @@ Public Class wsventasinrecibo
             Dim totalsiniva As Double = total / 1.12
             Dim iva As Double = totalsiniva * 0.12
 
-            Dim empresa As String = "SELECT id_empresa  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
-            Dim sucursal As String = "SELECT id_sucursal  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
+            Dim empresa As String = "SELECT id_empresa  FROM  [USUARIO] where USUARIO = '" & usuario & "'"
+            Dim sucursal As String = "SELECT id_sucursal  FROM  [USUARIO] where USUARIO = '" & usuario & "'"
 
             'INSERCION DE LA FACTURA
-            Dim str1 As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[ENC_FACTURA]([USUARIO],[id_empresa],[Serie_Fact],[Fecha],[firma],[Cae],[Total_Factura],[Iva_Factura],[Total_sin_iva],[Total_Descuento],[Id_Clt],[dias_cred],[id_suc],[efectivo],[cheques],[tarjeta],[valorExcencion],[valorCertificado],[valorCredito]) " &
+            Dim str1 As String = "INSERT INTO  [ENC_FACTURA]([USUARIO],[id_empresa],[Serie_Fact],[Fecha],[firma],[Cae],[Total_Factura],[Iva_Factura],[Total_sin_iva],[Total_Descuento],[Id_Clt],[dias_cred],[id_suc],[efectivo],[cheques],[tarjeta],[valorExcencion],[valorCertificado],[valorCredito]) " &
                 "VALUES('" & usuario & "', (" & empresa & "),'" & serie & "',GETDATE(),'" & firma & "','" & cae & "'," & total & "," & Math.Round(iva, 2) & "," & Math.Round(totalsiniva, 2) & "," & descuento & "," & idcliente & "," & diascredito & ", (" & sucursal & ")," & efectivo & "," & cheques & "," & tarjeta & "," & valorExcencion & "," & valorCertificado & "," & valorCredito & " )"
 
             'ejecuto primer comando sql
@@ -161,7 +157,7 @@ Public Class wsventasinrecibo
 
 
             'INSERTAMOS RECIVO
-            Dim strRecivo As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[ENC_RECIBO] ([fecha],[Id_Clt],[Usuario],[empresa],[sucursal],[estado]) " &
+            Dim strRecivo As String = "INSERT INTO  [ENC_RECIBO] ([fecha],[Id_Clt],[Usuario],[empresa],[sucursal],[estado]) " &
                 " VALUES(GETDATE()," & idcliente & ",'" & usuario & "',(" & empresa & "),(" & sucursal & "),1);"
 
             comando.CommandText = strRecivo
@@ -173,7 +169,7 @@ Public Class wsventasinrecibo
 
 
             'INSERTAMOS EL RECIVO EN LA FACTURA
-            Dim strFac_RECIVO As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[DET_RECIBO_FACT]([idRecibo],[id_enc],[abonado]) " &
+            Dim strFac_RECIVO As String = "INSERT INTO  [DET_RECIBO_FACT]([idRecibo],[id_enc],[abonado]) " &
                 "VALUES(" & idRecivo & "," & id & "," & (total - valorCredito) & ");"
 
             comando.CommandText = strFac_RECIVO
@@ -181,12 +177,12 @@ Public Class wsventasinrecibo
 
             'INSERCION DEL DETALLE DE LA FACTURA
             For Each item As facturas In listfac
-                Dim TablaEncabezado As DataTable = manipular.ObtenerDatos("SELECT [id_detalle],[cantidad_articulo],[Precio_Unit_Articulo] ,[Total],[Descuento] ,[Iva],[Total_sin_iva],[id_Art],[costoPromedio],[Id_Bod],[estado] FROM [ERPDEVLYNGT].[dbo].[DETA_RESERVA] WHERE [id_enc] = " & item.codigo & " and estado =1")
+                Dim TablaEncabezado As DataTable = manipular.ObtenerDatos("SELECT [id_detalle],[cantidad_articulo],[Precio_Unit_Articulo] ,[Total],[Descuento] ,[Iva],[Total_sin_iva],[id_Art],[costoPromedio],[Id_Bod],[estado] FROM  [DETA_RESERVA] WHERE [id_enc] = " & item.codigo & " and estado =1")
 
                 For i = 0 To TablaEncabezado.Rows.Count - 1
 
 
-                    Dim str2 As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[DET_FACTURA] " &
+                    Dim str2 As String = "INSERT INTO  [DET_FACTURA] " &
                 "([id_enc],[Cantidad_Articulo],[Precio_Unit_Articulo],[Sub_Total],[Descuento],[Iva],[Total_Sin_Iva],[Total],[Id_Art],[costoPromedio],[Id_Bod])" &
                 "VALUES(" & id & "," & TablaEncabezado.Rows(i).Item("cantidad_articulo") & "," & TablaEncabezado.Rows(i).Item("Precio_Unit_Articulo") & "," & TablaEncabezado.Rows(i).Item("Total") & ",0.00," & TablaEncabezado.Rows(i).Item("Iva") & "," & TablaEncabezado.Rows(i).Item("Total_sin_iva") & "," & (TablaEncabezado.Rows(i).Item("cantidad_articulo") * TablaEncabezado.Rows(i).Item("Precio_Unit_Articulo")) & "," & TablaEncabezado.Rows(i).Item("id_Art") & "," & TablaEncabezado.Rows(i).Item("costoPromedio") & "," & TablaEncabezado.Rows(i).Item("Id_Bod") & ");"
 
@@ -221,9 +217,9 @@ Public Class wsventasinrecibo
                 If item.tipo = 8 Then
                     Dim strCupon As String = ""
                     If item.cambio = 0 Then
-                        strCupon = "UPDATE [ERPDEVLYNGT].[dbo].[DETA_CUPON] set saldo  = 0   WHERE estado  = 1 and id_cupon_detalle = " & item.extra
+                        strCupon = "UPDATE  [DETA_CUPON] set saldo  = 0   WHERE estado  = 1 and id_cupon_detalle = " & item.extra
                     Else
-                        strCupon = "UPDATE [ERPDEVLYNGT].[dbo].[DETA_CUPON] set saldo  = " & item.valor - (item.valor - item.cambio) & "   WHERE estado  = 1 and id_cupon_detalle = " & item.extra
+                        strCupon = "UPDATE  [DETA_CUPON] set saldo  = " & item.valor - (item.valor - item.cambio) & "   WHERE estado  = 1 and id_cupon_detalle = " & item.extra
                     End If
 
                     comando.CommandText = strCupon
@@ -256,7 +252,7 @@ Public Class wsventasinrecibo
 
     <WebMethod()>
     Public Function ObtenerCantidadProducto(ByVal idart As Integer, ByVal idbodega As Integer) As Integer
-        Dim SQL As String = "Select Existencia_Deta_Art As cantidad from ERPDEVLYNGT.dbo.Existencias where Id_Art = " & idart & " And id_bod = " & idbodega
+        Dim SQL As String = "Select Existencia_Deta_Art As cantidad from  Existencias where Id_Art = " & idart & " And id_bod = " & idbodega
 
         Dim result As Integer = 0
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -274,7 +270,7 @@ Public Class wsventasinrecibo
 
     <WebMethod()>
     Public Function ObtenerSerie(ByVal usuario As String) As String
-        Dim SQL As String = "select top 1 Series from [ERPDEVLYNGT].[dbo].[SUCURSALES] S INNER JOIN [ERPDEVLYNGT].[dbo].[Correlativos] C ON c.id_correlativo = s.id_correlativo where id_suc = (select u.id_sucursal from  [ERPDEVLYNGT].[dbo].[USUARIO] u where USUARIO = '" & usuario & "')"
+        Dim SQL As String = "select top 1 Series from  [SUCURSALES] S INNER JOIN  [Correlativos] C ON c.id_correlativo = s.id_correlativo where id_suc = (select u.id_sucursal from   [USUARIO] u where USUARIO = '" & usuario & "')"
 
         Dim result As String = ""
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -317,7 +313,7 @@ Public Class wsventasinrecibo
 
     <WebMethod()>
     Public Function ObtenerSiguienteCorrelativo(ByVal serie As String) As String
-        Dim SQL As String = "Select ISNULL(MAX(CAST(SUBSTRING(firma, 10, 25) As numeric)), 180000000000) + 1 As Siguiente FROM [ERPDEVLYNGT].[dbo].[ENC_FACTURA] WHERE Serie_Fact = '" & serie & "';"
+        Dim SQL As String = "Select ISNULL(MAX(CAST(SUBSTRING(firma, 10, 25) As numeric)), 180000000000) + 1 As Siguiente FROM  [ENC_FACTURA] WHERE Serie_Fact = '" & serie & "';"
 
         Dim result As String = ""
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)

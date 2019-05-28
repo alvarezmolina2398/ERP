@@ -1,4 +1,5 @@
 ﻿$(function () {
+    $('#costo').attr('disabled', false);
     var user = window.atob(getCookie("us"));
     mostrarDatos();
     cargarMarcas();
@@ -8,6 +9,8 @@
 
     $('#mdNew').click(function () {
         limpiar();
+        $('#requiereProduccion').attr('disabled', false);
+        $('#costo').attr('disabled', false);
     });
 
     //accion  al momento de acepatar elminar
@@ -132,8 +135,14 @@
         var color = $('#color');
         var preciogt = $('#preciogt');
         var precioes = 0
+        var precio3 = 0;
         var costo = $('#costo');
-        
+        var requiereProduccion = 0;
+
+
+        if ($('#requiereProduccion').prop('checked')) {
+            requiereProduccion = 1;
+        }
         
         var id = $('#id').val();
 
@@ -141,15 +150,19 @@
             precioes = $('#precioes').val();
         }
 
+        if ($('#precio3').val() != 0) {
+            precio3 = $('#precio3').val();
+        }
+
         if (validarForm()) {
             var data1 = '';
             var url1 = ''
             if (id != 0) {
                 url1 = 'Actualizar'
-                data1 = '{ descripcion : "' + descripcion.val() + '",  codigo : "' + codigo.val() + '",  tipo : ' + tipo.val() + ',  cod_pro1 : "' + codigo1.val() + '",  cod_pro2 : "' + codigo2.val() + '",  marca : ' + marca.val() + ', idsubmarca : ' + submarca.val() + ',  id_clasi : ' + clasificacion.val() + ',  id_subclasi : ' + subclasificacion.val() + ',  idcolor : ' + color.val() + ',  preciogt : "' + preciogt.val() + '",  precioEs : ' + precioes + ', costo : ' + costo.val() + ',  usuario : "' + user + '", id : '+ id +'}';
+                data1 = '{ descripcion : "' + descripcion.val() + '",  codigo : "' + codigo.val() + '",  tipo : ' + tipo.val() + ',  cod_pro1 : "' + codigo1.val() + '",  cod_pro2 : "' + codigo2.val() + '",  marca : ' + marca.val() + ', idsubmarca : ' + submarca.val() + ',  id_clasi : ' + clasificacion.val() + ',  id_subclasi : ' + subclasificacion.val() + ',  idcolor : ' + color.val() + ',  preciogt : "' + preciogt.val() + '",  precioEs : ' + precioes + ', costo : ' + costo.val() + ',  usuario : "' + user + '", id : ' + id + ', precio3: ' + precio3 + ', requiereProduccion : ' + requiereProduccion +'}';
             } else {
                 url1 = 'Insertar'
-                data1 = '{ descripcion : "' + descripcion.val() + '",  codigo : "' + codigo.val() + '",  tipo : ' + tipo.val() + ',  cod_pro1 : "' + codigo1.val() + '",  cod_pro2 : "' + codigo2.val() + '",  marca : ' + marca.val() + ', idsubmarca : ' + submarca.val() + ',  id_clasi : ' + clasificacion.val() + ',  id_subclasi : ' + subclasificacion.val() + ',  idcolor : ' + color.val() + ',  preciogt : "' + preciogt.val() + '",  precioEs : ' + precioes + ', costo : ' + costo.val() + ',  usuario : "' + user + '"}';
+                data1 = '{ descripcion : "' + descripcion.val() + '",  codigo : "' + codigo.val() + '",  tipo : ' + tipo.val() + ',  cod_pro1 : "' + codigo1.val() + '",  cod_pro2 : "' + codigo2.val() + '",  marca : ' + marca.val() + ', idsubmarca : ' + submarca.val() + ',  id_clasi : ' + clasificacion.val() + ',  id_subclasi : ' + subclasificacion.val() + ',  idcolor : ' + color.val() + ',  preciogt : "' + preciogt.val() + '",  precioEs : ' + precioes + ', costo : ' + costo.val() + ',  usuario : "' + user + '", precio3: ' + precio3 + ', requiereProduccion : ' + requiereProduccion +'}';
             }
 
             //consume el ws para obtener los datos
@@ -294,133 +307,270 @@ function cargarTipo() {
 
 
 function validarForm() {
-    var company = $('#company');
+    var codigo = $('#codigo');
     var descripcion = $('#descripcion');
-    var sucursal = $('#sucursal');
-    var observacion = $('#observacion');
-    var region = $('#region');
+    var tipo = $('#tipo');
+    var marca = $('#marca');
+    var submarca = $('#submarca');
+    var clasificacion = $('#clasificacion');
+    var sub_clasificacion = $('#sub-clasificacion');
+    var color = $('#color');
+    var preciogt = $('#preciogt');
+    var costo = $('#costo');
 
 
-    company.removeClass('is-invalid');
-    company.removeClass('is-valid');
+    codigo.removeClass('is-invalid');
+    codigo.removeClass('is-valid');
 
     descripcion.removeClass('is-invalid');
     descripcion.removeClass('is-valid');
 
-    sucursal.removeClass('is-invalid');
-    sucursal.removeClass('is-valid');
 
-    observacion.removeClass('is-invalid');
-    observacion.removeClass('is-valid');
+    tipo.removeClass('is-invalid');
+    tipo.removeClass('is-valid');
 
-    region.removeClass('is-invalid');
-    region.removeClass('is-valid');
+    marca.removeClass('is-invalid');
+    marca.removeClass('is-valid');
+
+    submarca.removeClass('is-invalid');
+    submarca.removeClass('is-valid');
+
+    clasificacion.removeClass('is-invalid');
+    clasificacion.removeClass('is-valid');
+
+    sub_clasificacion.removeClass('is-invalid');
+    sub_clasificacion.removeClass('is-valid');
+
+    color.removeClass('is-invalid');
+    color.removeClass('is-valid');
+
+    preciogt.removeClass('is-invalid');
+    preciogt.removeClass('is-valid');
+
+
+    costo.removeClass('is-invalid');
+    costo.removeClass('is-valid');
 
     var result = true
-    //if (company.val() == 0) {
-    //    company.addClass('is-invalid');
-    //    company.focus();
-    //    $('#bt-guardar').removeAttr('disabled', true);
-    //    $('#bt-cancelar').removeAttr('disabled', true);
-    //    $('.jq-toast-wrap').remove();
-    //    $.toast({
-    //        heading: 'ADVERTENCIA',
-    //        text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
-    //        position: 'bottom-right',
-    //        showHideTransition: 'plain',
-    //        icon: 'warning',
-    //        stack: false
-    //    });
+    if (codigo.val() == "") {
+        codigo.addClass('is-invalid');
+        codigo.focus();
+        $('#bt-guardar').removeAttr('disabled', true);
+        $('#bt-cancelar').removeAttr('disabled', true);
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: 'ADVERTENCIA',
+            text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'warning',
+            stack: false
+        });
 
 
-    //    result = false;
-    //} else {
-    //    company.addClass('is-valid');
-    //}
+        result = false;
+    } else {
+        codigo.addClass('is-valid');
+    }
 
-    //if (descripcion.val() == "") {
-    //    descripcion.addClass('is-invalid');
-    //    descripcion.focus();
-    //    $('#bt-guardar').removeAttr('disabled', true);
-    //    $('#bt-cancelar').removeAttr('disabled', true);
-    //    $('.jq-toast-wrap').remove();
-    //    $.toast({
-    //        heading: 'ADVERTENCIA',
-    //        text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
-    //        position: 'bottom-right',
-    //        showHideTransition: 'plain',
-    //        icon: 'warning',
-    //        stack: false
-    //    });
 
-    //    result = false;
-    //} else {
-    //    descripcion.addClass('is-valid');
-    //}
+    if (descripcion.val() == "") {
+        descripcion.addClass('is-invalid');
+        descripcion.focus();
+        $('#bt-guardar').removeAttr('disabled', true);
+        $('#bt-cancelar').removeAttr('disabled', true);
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: 'ADVERTENCIA',
+            text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'warning',
+            stack: false
+        });
 
-    ////valdia que el select sucursal este vacio
-    //if (sucursal.val() == 0) {
-    //    sucursal.addClass('is-invalid');
-    //    sucursal.focus();
-    //    $('#bt-guardar').removeAttr('disabled', true);
-    //    $('#bt-cancelar').removeAttr('disabled', true);
-    //    $('.jq-toast-wrap').remove();
-    //    $.toast({
-    //        heading: 'ADVERTENCIA',
-    //        text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
-    //        position: 'bottom-right',
-    //        showHideTransition: 'plain',
-    //        icon: 'warning',
-    //        stack: false
-    //    });
 
-    //    result = false;
-    //} else {
-    //    sucursal.addClass('is-valid');
-    //}
+        result = false;
+    } else {
+        descripcion.addClass('is-valid');
+    }
 
-    ////valida el campo de region
-    //if (region.val() == 0) {
-    //    region.addClass('is-invalid');
-    //    region.focus();
-    //    $('#bt-guardar').removeAttr('disabled', true);
-    //    $('#bt-cancelar').removeAttr('disabled', true);
-    //    $('.jq-toast-wrap').remove();
-    //    $.toast({
-    //        heading: 'ADVERTENCIA',
-    //        text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
-    //        position: 'bottom-right',
-    //        showHideTransition: 'plain',
-    //        icon: 'warning',
-    //        stack: false
-    //    });
+    if (tipo.val() == 0 || !tipo.val()) {
+        tipo.addClass('is-invalid');
+        tipo.focus();
+        $('#bt-guardar').removeAttr('disabled', true);
+        $('#bt-cancelar').removeAttr('disabled', true);
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: 'ADVERTENCIA',
+            text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'warning',
+            stack: false
+        });
 
-    //    result = false;
-    //} else {
-    //    region.addClass('is-valid');
-    //}
 
-    ////valida las observaciones
-    //if (observacion.val() == 0) {
-    //    observacion.addClass('is-invalid');
-    //    observacion.focus();
-    //    $('#bt-guardar').removeAttr('disabled', true);
-    //    $('#bt-cancelar').removeAttr('disabled', true);
-    //    $('.jq-toast-wrap').remove();
-    //    $.toast({
-    //        heading: 'ADVERTENCIA',
-    //        text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
-    //        position: 'bottom-right',
-    //        showHideTransition: 'plain',
-    //        icon: 'warning',
-    //        stack: false
-    //    });
+        result = false;
+    } else {
+        tipo.addClass('is-valid');
+    }
 
-    //    result = false;
-    //} else {
-    //    observacion.addClass('is-valid');
-    //}
 
+    if (marca.val() == 0 || !marca.val()) {
+        marca.addClass('is-invalid');
+        marca.focus();
+        $('#bt-guardar').removeAttr('disabled', true);
+        $('#bt-cancelar').removeAttr('disabled', true);
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: 'ADVERTENCIA',
+            text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'warning',
+            stack: false
+        });
+
+
+        result = false;
+    } else {
+        marca.addClass('is-valid');
+    }
+
+
+    if (submarca.val() == 0 || !submarca.val()) {
+        submarca.addClass('is-invalid');
+        submarca.focus();
+        $('#bt-guardar').removeAttr('disabled', true);
+        $('#bt-cancelar').removeAttr('disabled', true);
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: 'ADVERTENCIA',
+            text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'warning',
+            stack: false
+        });
+
+
+        result = false;
+    } else {
+        submarca.addClass('is-valid');
+    }
+
+
+    if (clasificacion.val() == 0 || !clasificacion.val()) {
+        clasificacion.addClass('is-invalid');
+        clasificacion.focus();
+        $('#bt-guardar').removeAttr('disabled', true);
+        $('#bt-cancelar').removeAttr('disabled', true);
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: 'ADVERTENCIA',
+            text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'warning',
+            stack: false
+        });
+
+
+        result = false;
+    } else {
+        clasificacion.addClass('is-valid');
+    }
+
+
+
+    if (sub_clasificacion.val() == 0 || !sub_clasificacion.val()) {
+        sub_clasificacion.addClass('is-invalid');
+        sub_clasificacion.focus();
+        $('#bt-guardar').removeAttr('disabled', true);
+        $('#bt-cancelar').removeAttr('disabled', true);
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: 'ADVERTENCIA',
+            text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'warning',
+            stack: false
+        });
+
+
+        result = false;
+    } else {
+        sub_clasificacion.addClass('is-valid');
+    }
+
+    if (color.val() == 0 || !color.val()) {
+        color.addClass('is-invalid');
+        color.focus();
+        $('#bt-guardar').removeAttr('disabled', true);
+        $('#bt-cancelar').removeAttr('disabled', true);
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: 'ADVERTENCIA',
+            text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'warning',
+            stack: false
+        });
+
+
+        result = false;
+    } else {
+        color.addClass('is-valid');
+    }
+
+   
+
+    if (preciogt.val() == "") {
+        preciogt.addClass('is-invalid');
+        preciogt.focus();
+        $('#bt-guardar').removeAttr('disabled', true);
+        $('#bt-cancelar').removeAttr('disabled', true);
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: 'ADVERTENCIA',
+            text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'warning',
+            stack: false
+        });
+
+
+        result = false;
+    } else {
+        preciogt.addClass('is-valid');
+    }
+
+    if (costo.val() == "") {
+        costo.addClass('is-invalid');
+        costo.focus();
+        $('#bt-guardar').removeAttr('disabled', true);
+        $('#bt-cancelar').removeAttr('disabled', true);
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: 'ADVERTENCIA',
+            text: 'Existen Datos que debe ingresar para poder realizar la acción solicitada',
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'warning',
+            stack: false
+        });
+
+
+        result = false;
+    } else {
+        costo.addClass('is-valid');
+    }
+
+    
     return result;
 
 }
@@ -434,8 +584,7 @@ function limpiar() {
     $('#region').html('<option value="0">Seleccione Una Opción</option>');
     $('#id').val(0);
 
-
-
+    $('#requiereProduccion').prop("checked",false);  
 
     $('#codigo').val(null);
     $('#descripcion').val(null);
@@ -447,25 +596,55 @@ function limpiar() {
     $('#clasificacion').val(0);
     $('#sub-clasificacion').val('<option value="0">Seleccione Una Opción</option>');
     $('#color').val(0);
-    $('#preciogt').val(null);
-    $('#precioes').val(null);
+    $('#preciogt').val(0);
+    $('#precioes').val(0);
+    $('#precio3').val(0);
     $('#costo').val(null);
 
 
-    $('#company').removeClass('is-invalid');
-    $('#company').removeClass('is-valid');
+    var codigo = $('#codigo');
+    var descripcion = $('#descripcion');
+    var tipo = $('#tipo');
+    var marca = $('#marca');
+    var submarca = $('#submarca');
+    var clasificacion = $('#clasificacion');
+    var sub_clasificacion = $('#sub-clasificacion');
+    var color = $('#color');
+    var preciogt = $('#preciogt');
+    var costo = $('#costo');
 
-    $('#descripcion').removeClass('is-invalid');
-    $('#descripcion').removeClass('is-valid');
 
-    $('#sucursal').removeClass('is-invalid');
-    $('#sucursal').removeClass('is-valid');
+    codigo.removeClass('is-invalid');
+    codigo.removeClass('is-valid');
 
-    $('#observacion').removeClass('is-invalid');
-    $('#observacion').removeClass('is-valid');
+    descripcion.removeClass('is-invalid');
+    descripcion.removeClass('is-valid');
 
-    $('#region').removeClass('is-invalid');
-    $('#region').removeClass('is-valid');
+
+    tipo.removeClass('is-invalid');
+    tipo.removeClass('is-valid');
+
+    marca.removeClass('is-invalid');
+    marca.removeClass('is-valid');
+
+    submarca.removeClass('is-invalid');
+    submarca.removeClass('is-valid');
+
+    clasificacion.removeClass('is-invalid');
+    clasificacion.removeClass('is-valid');
+
+    sub_clasificacion.removeClass('is-invalid');
+    sub_clasificacion.removeClass('is-valid');
+
+    color.removeClass('is-invalid');
+    color.removeClass('is-valid');
+
+    preciogt.removeClass('is-invalid');
+    preciogt.removeClass('is-valid');
+
+
+    costo.removeClass('is-invalid');
+    costo.removeClass('is-valid');
 
     $('#bt-guardar').removeAttr('disabled', true);
     $('#bt-cancelar').removeAttr('disabled', true);
@@ -476,7 +655,7 @@ function limpiar() {
 }
 
 // funcion para cargar datos en el formulario
-function cargarenFormulario(id, descripcion, codigo, codigo1, codigo2, idcolor, idmarca, tipo, idclasificacion, preciogt, precioes, costo, idsubclasificacion,idsubmarca) {
+function cargarenFormulario(id, descripcion, codigo, codigo1, codigo2, idcolor, idmarca, tipo, idclasificacion, preciogt, precioes, costo, idsubclasificacion, idsubmarca, precio3, producir) {
     limpiar();
     $('#id').val(id);
     $('#descripcion').val(descripcion);
@@ -490,14 +669,23 @@ function cargarenFormulario(id, descripcion, codigo, codigo1, codigo2, idcolor, 
     $('#codigo1').val(codigo1);
     $('#codigo2').val(codigo2);
     $('#marca').val(idmarca);
-    $('#submarca').val('<option value="0">Seleccione Una Opción</option>');
+    $('#submarca').html('<option value="0">Seleccione Una Opción</option>');
     $('#clasificacion').val(idclasificacion);
-    $('#sub-clasificacion').val('<option value="0">Seleccione Una Opción</option>');
+    $('#sub-clasificacion').html('<option value="0">Seleccione Una Opción</option>');
     $('#color').val(idcolor);
     $('#preciogt').val(preciogt);
     $('#precioes').val(precioes);
+    $('#precio3').val(precio3);
     $('#costo').val(costo);
+    $('#costo').attr('disabled', true);
+    $('#requiereProduccion').attr('disabled', true);
+    $('#requiereProduccion').prop("checked", false);  
 
+    if (producir == 1) {
+        $('#requiereProduccion').prop("checked", true);  
+    } else {
+        $('#requiereProduccion').prop("checked", false);  
+    }
 
     //consume el ws para obtener los datos
     $.ajax({
@@ -560,7 +748,7 @@ function mostrarDatos() {
             $('#tbod-datos').html(null);
             $.each(msg.d, function () {
                 tds = "<tr class='odd'><td>" + i + "</td><td>" + this.codigo + "</td><td>" + this.descripcion + "</td><td>" + this.color + "</td><td>" + this.precioGt + "</td><td> " +
-                    "<span onclick='cargarenFormulario(" + this.id + ",\"" + this.descripcion + "\",\"" + this.codigo + "\",\"" + this.codigo1 + "\",\"" + this.codigo2 + "\"," + this.idcolor + "," + this.idmarca + "," + this.tipo + "," + this.idclasificacion + ", " + this.precioGt + ", " + this.precioEs + "," + this.costo + ", " + this.id_Subclasificacion + "," + this.idsubmarca +")' class='Mdnew btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='Click para poder cargar los datos en el formulario, para poder actualizar.' data-original-title='' title ='' > " +
+                    "<span onclick='cargarenFormulario(" + this.id + ",\"" + this.descripcion + "\",\"" + this.codigo + "\",\"" + this.codigo1 + "\",\"" + this.codigo2 + "\"," + this.idcolor + "," + this.idmarca + "," + this.tipo + "," + this.idclasificacion + ", " + this.precioGt + ", " + this.precioEs + "," + this.costo + ", " + this.id_Subclasificacion + "," + this.idsubmarca + "," + this.precio3 + "," + this.producir +")' class='Mdnew btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='Click para poder cargar los datos en el formulario, para poder actualizar.' data-original-title='' title ='' > " +
                     "<i class='material-icons'>edit</i> " +
                     "</span> " +
                     "<span onclick='eliminar(" + this.id + ")' class='btn btn-sm btn-outline-danger' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='Click para poder Inhabilitar el dato seleccionado, Esto hara que dicho dato no aparesca en ninguna acción, menu o formulario del sistema.' data-original-title='' title=''> " +

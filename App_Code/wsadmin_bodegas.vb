@@ -15,10 +15,10 @@ Public Class wsadmin_bodegas
     <WebMethod()>
     Public Function ObtenerDatos() As List(Of datos)
         Dim SQL As String = "SELECT b.Id_Bod, e.id_empresa, s.id_suc,b.Nom_Bod,b.Observ_Bod, e.nombre as empresa, s.descripcion as sucursal,r.id_region, r.descripcion as region, b.principal " &
-            "FROM [ERPDEVLYNGT].[dbo].[Bodegas] b " &
-            "INNER JOIN [ERPDEVLYNGT].[dbo].[ENCA_CIA] e ON e.id_empresa = b.Id_Empsa  " &
-            "INNER JOIN [ERPDEVLYNGT].[dbo].[SUCURSALES] s ON s.id_suc = b.Id_suc " &
-            "INNER JOIN [ERPDEVLYNGT].[dbo].[REGIONES] r ON r.id_region = s.id_region " &
+            "FROM  [Bodegas] b " &
+            "INNER JOIN  [ENCA_CIA] e ON e.id_empresa = b.Id_Empsa  " &
+            "INNER JOIN  [SUCURSALES] s ON s.id_suc = b.Id_suc " &
+            "INNER JOIN  [REGIONES] r ON r.id_region = s.id_region " &
             "WHERE b.estado = 1 and s.estado = 1 and e.estado = 1 and r.estado = 1 "
 
         Dim result As List(Of [datos]) = New List(Of datos)()
@@ -51,11 +51,11 @@ Public Class wsadmin_bodegas
     <WebMethod()>
     Public Function ObtenerDatosPorSucursal(ByVal usuario As String) As List(Of datos)
         Dim SQL As String = "SELECT b.Id_Bod, e.id_empresa, s.id_suc,b.Nom_Bod,b.Observ_Bod, e.nombre as empresa, s.descripcion as sucursal,r.id_region, r.descripcion as region, b.principal " &
-            "FROM [ERPDEVLYNGT].[dbo].[Bodegas] b " &
-            "INNER JOIN [ERPDEVLYNGT].[dbo].[ENCA_CIA] e ON e.id_empresa = b.Id_Empsa  " &
-            "INNER JOIN [ERPDEVLYNGT].[dbo].[SUCURSALES] s ON s.id_suc = b.Id_suc " &
-            "INNER JOIN [ERPDEVLYNGT].[dbo].[REGIONES] r ON r.id_region = s.id_region " &
-            "WHERE b.estado = 1 and s.estado = 1 and e.estado = 1 and r.estado = 1 and s.id_suc = (SELECT id_sucursal FROM [ERPDEVLYNGT].[dbo].[USUARIO] WHERE USUARIO = '" & usuario & "') "
+            "FROM  [Bodegas] b " &
+            "INNER JOIN  [ENCA_CIA] e ON e.id_empresa = b.Id_Empsa  " &
+            "INNER JOIN  [SUCURSALES] s ON s.id_suc = b.Id_suc " &
+            "INNER JOIN  [REGIONES] r ON r.id_region = s.id_region " &
+            "WHERE b.estado = 1 and s.estado = 1 and e.estado = 1 and r.estado = 1 and s.id_suc = (SELECT id_sucursal FROM  [USUARIO] WHERE USUARIO = '" & usuario & "') "
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -85,10 +85,10 @@ Public Class wsadmin_bodegas
     <WebMethod()>
     Public Function ObtenerDatosIDSucursal(ByVal sucursal As Integer) As List(Of datos)
         Dim SQL As String = "SELECT b.Id_Bod, e.id_empresa, s.id_suc,b.Nom_Bod,b.Observ_Bod, e.nombre as empresa, s.descripcion as sucursal,r.id_region, r.descripcion as region, b.principal " &
-            "FROM [ERPDEVLYNGT].[dbo].[Bodegas] b " &
-            "INNER JOIN [ERPDEVLYNGT].[dbo].[ENCA_CIA] e ON e.id_empresa = b.Id_Empsa  " &
-            "INNER JOIN [ERPDEVLYNGT].[dbo].[SUCURSALES] s ON s.id_suc = b.Id_suc " &
-            "INNER JOIN [ERPDEVLYNGT].[dbo].[REGIONES] r ON r.id_region = s.id_region " &
+            "FROM  [Bodegas] b " &
+            "INNER JOIN  [ENCA_CIA] e ON e.id_empresa = b.Id_Empsa  " &
+            "INNER JOIN  [SUCURSALES] s ON s.id_suc = b.Id_suc " &
+            "INNER JOIN  [REGIONES] r ON r.id_region = s.id_region " &
             "WHERE b.estado = 1 and s.estado = 1 and e.estado = 1 and r.estado = 1 and s.id_suc = " & sucursal
 
         Dim result As List(Of [datos]) = New List(Of datos)()
@@ -120,7 +120,7 @@ Public Class wsadmin_bodegas
     <WebMethod()>
     Public Function Insertar(ByVal descripcion As String, ByVal observacion As String, ByVal empresa As String, ByVal idsucursal As Integer, ByVal principal As Integer) As String
         'consulta sql
-        Dim sql As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[Bodegas] (Id_suc,Id_Empsa,Nom_Bod,Observ_Bod,estado,principal) VALUES(" & idsucursal & ", " & empresa & ", '" & descripcion & "','" & observacion & "',1," & principal & ");"
+        Dim sql As String = "INSERT INTO  [Bodegas] (Id_suc,Id_Empsa,Nom_Bod,Observ_Bod,estado,principal) VALUES(" & idsucursal & ", " & empresa & ", '" & descripcion & "','" & observacion & "',1," & principal & ");"
 
 
         Dim result As String = ""
@@ -146,10 +146,10 @@ Public Class wsadmin_bodegas
         Dim sql As String = ""
 
         If principal = 1 Then
-            sql = "UPDATE [ERPDEVLYNGT].[dbo].[Bodegas] set principal = 0 where Id_Empsa=" & empresa & " and Id_suc = " & idsucursal & " and estado =1;"
+            sql = "UPDATE  [Bodegas] set principal = 0 where Id_Empsa=" & empresa & " and Id_suc = " & idsucursal & " and estado =1;"
         End If
 
-        sql = sql & "UPDATE [ERPDEVLYNGT].[dbo].[Bodegas] set  Id_suc = " & idsucursal & ",Id_Empsa = " & empresa & ",Nom_Bod = '" & descripcion & "',Observ_Bod = '" & observacion & "', principal = " & principal & " where Id_Bod = " & id
+        sql = sql & "UPDATE  [Bodegas] set  Id_suc = " & idsucursal & ",Id_Empsa = " & empresa & ",Nom_Bod = '" & descripcion & "',Observ_Bod = '" & observacion & "', principal = " & principal & " where Id_Bod = " & id
 
         Dim result As String = ""
 
@@ -170,7 +170,7 @@ Public Class wsadmin_bodegas
     <WebMethod()>
     Public Function Inhabilitar(ByVal id As Integer) As String
         'consulta sql
-        Dim sql As String = "UPDATE [ERPDEVLYNGT].[dbo].[Bodegas] set   estado = 0 where Id_Bod = " & id
+        Dim sql As String = "UPDATE  [Bodegas] set   estado = 0 where Id_Bod = " & id
 
 
         Dim result As String = ""
@@ -189,7 +189,7 @@ Public Class wsadmin_bodegas
 
     <WebMethod()>
     Public Function ExistePrincipal(ByVal id As Integer) As Boolean
-        Dim SQL As String = "Select  count(*) as cantidad from [ERPDEVLYNGT].[dbo].[Bodegas] b WHERE estado = 1 And Id_Empsa = " & id & " And principal = 1"
+        Dim SQL As String = "Select  count(*) as cantidad from  [Bodegas] b WHERE estado = 1 And Id_Empsa = " & id & " And principal = 1"
 
 
         Dim resultado As Boolean = False

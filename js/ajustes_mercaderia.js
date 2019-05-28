@@ -171,7 +171,7 @@ $(function () {
                 var tipo = '';
 
 
-               if ($('#tipo').val() == 1) {
+               if (datos[i].tipo == 1) {
                     tipo = '+';
                } else {
                     tipo = '-'

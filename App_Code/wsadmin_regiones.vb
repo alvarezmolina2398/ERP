@@ -13,7 +13,7 @@ Public Class wsadmin_regiones
 
     <WebMethod()>
     Public Function ObtenerDatos() As List(Of datos)
-        Dim SQL As String = "  SELECT r.id_region, r.descripcion,e.nombre, e.id_empresa FROM dbo.REGIONES R INNER JOIN dbo.ENCA_CIA e on e.id_empresa = r.id_empresa where r.estado = 1 and e.estado = 1"
+        Dim SQL As String = "  SELECT r.id_region, r.descripcion,e.nombre, e.id_empresa FROM  REGIONES R INNER JOIN  ENCA_CIA e on e.id_empresa = r.id_empresa where r.estado = 1 and e.estado = 1"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -37,7 +37,7 @@ Public Class wsadmin_regiones
 
     <WebMethod()>
     Public Function ObtenerDatosPorID(ByVal id As Integer) As List(Of datos)
-        Dim SQL As String = "  SELECT r.id_region, r.descripcion,e.nombre, e.id_empresa FROM ERPDEVLYNGT.dbo.REGIONES R INNER JOIN dbo.ENCA_CIA e on e.id_empresa = r.id_empresa where r.estado = 1 and e.estado = 1 and e.id_empresa = " & id
+        Dim SQL As String = "  SELECT r.id_region, r.descripcion,e.nombre, e.id_empresa FROM  REGIONES R INNER JOIN  ENCA_CIA e on e.id_empresa = r.id_empresa where r.estado = 1 and e.estado = 1 and e.id_empresa = " & id
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -63,7 +63,7 @@ Public Class wsadmin_regiones
     <WebMethod()>
     Public Function Insertar(ByVal descripcion As String, ByVal empresa As String) As String
         'consulta sql
-        Dim sql As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[REGIONES] (descripcion ,estado,id_empresa) VALUES('" & descripcion & "',1," & empresa & ");"
+        Dim sql As String = "INSERT INTO  [REGIONES] (descripcion ,estado,id_empresa) VALUES('" & descripcion & "',1," & empresa & ");"
 
 
         Dim result As String = ""
@@ -86,7 +86,7 @@ Public Class wsadmin_regiones
     <WebMethod()>
     Public Function Actualizar(ByVal descripcion As String, ByVal empresa As String, ByVal id As Integer) As String
         'consulta sql
-        Dim sql As String = "UPDATE   [ERPDEVLYNGT].[dbo].[REGIONES] set  descripcion = '" & descripcion & "' ,id_empresa = " & empresa & " where id_region = " & id
+        Dim sql As String = "UPDATE    [REGIONES] set  descripcion = '" & descripcion & "' ,id_empresa = " & empresa & " where id_region = " & id
 
 
         Dim result As String = ""
@@ -108,7 +108,7 @@ Public Class wsadmin_regiones
     <WebMethod()>
     Public Function Inhabilitar(ByVal id As Integer) As String
         'consulta sql
-        Dim sql As String = "UPDATE [ERPDEVLYNGT].[dbo].[REGIONES] set   estado = 0 where id_region = " & id
+        Dim sql As String = "UPDATE  [REGIONES] set   estado = 0 where id_region = " & id
 
 
         Dim result As String = ""

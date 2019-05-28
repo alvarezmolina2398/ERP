@@ -108,7 +108,6 @@ $(function () {
         }
     });
 
-
     
     cargarTipoPedido();
     CargarMonedas();
@@ -230,8 +229,26 @@ $(function () {
             });
 
         } else {
-            var linea = { 'cantidad': $('#cantidad').val(), 'codigo': $('#codigoproducto').val(), 'descripcion': $('#nomproducto').val(), 'precio': $('#precio').val(), 'id': $('#idproducto').val() };
-            datos.push(linea);
+
+
+            var result = false;
+            for (var i = 0; i < datos.length; i++) {
+                if (datos[i].codigo == $('#codigoproducto').val()) {
+                    datos[i].cantidad = parseInt(datos[i].cantidad) + parseInt($('#cantidad').val());
+                    result = true;
+                }
+            }
+
+            if (!result) {
+                var linea = { 'cantidad': $('#cantidad').val(), 'codigo': $('#codigoproducto').val(), 'descripcion': $('#nomproducto').val(), 'precio': $('#precio').val(), 'id': $('#idproducto').val() };
+                datos.push(linea);
+            }
+
+
+
+
+
+            
 
             var total = 0;
             $('#tbody').html(null);
@@ -272,6 +289,7 @@ $(function () {
     });
 
     $('#departamento').change(function () {
+        $('#solicitante').html('<option value="0">Seleccione Una Opción</option>');
         if ($(this).val()>0) {
             //consume el ws para obtener los datos
             $.ajax({
@@ -640,8 +658,6 @@ function cargarenFormulario(id, descripcion, codigo, codigo1, codigo2, idcolor, 
     $('#btn-guardar').addClass('btn-info');
 }
 
-
-
 // funcion para cargar datos en el formulario
 function eliminar(id) {
      var data = datos.splice(id, 1)
@@ -736,7 +752,7 @@ function cagarDepartamentoLaboral() {
 //metodo para obtener la sesion
 function getCookie(cname) {
     var name = cname + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
+    var decodedCookie = decodeURIComponent(document.cookie); 
     var ca = decodedCookie.split(';');
     for (var i = 0; i < ca.length; i++) {
         var c = ca[i];

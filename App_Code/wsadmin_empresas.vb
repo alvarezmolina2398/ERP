@@ -13,7 +13,7 @@ Public Class wsadmin_empresas
 
     <WebMethod()>
     Public Function ObtenerDatos() As List(Of datos)
-        Dim SQL As String = "SELECT [id_empresa],[nombre],[nombre_comercial],[id_depto],[id_municipio],[direccion],[tel1],[actividad],[tipo_pago],[nit],[no_establecimiento],[registro_merca],[no_registro_merca],convert(varchar,f_constitucion_cia,103) as f_constitucion_cia ,convert(varchar,fecha_registro_mercantil,103) as fecha_registro_mercantil   FROM [ERPDEVLYNGT].[dbo].[ENCA_CIA] where estado  = 1"
+        Dim SQL As String = "SELECT [id_empresa],[nombre],[nombre_comercial],[id_depto],[id_municipio],[direccion],[tel1],[actividad],[tipo_pago],[nit],[no_establecimiento],[registro_merca],[no_registro_merca],convert(varchar,f_constitucion_cia,103) as f_constitucion_cia ,convert(varchar,fecha_registro_mercantil,103) as fecha_registro_mercantil   FROM  [ENCA_CIA] where estado  = 1"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -59,7 +59,7 @@ Public Class wsadmin_empresas
         fecharegistro = fechaformat(2) & "-" & fechaformat(1) & "-" & fechaformat(0)
 
         'consulta sql
-        Dim sql As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[ENCA_CIA] ([nombre],[nombre_comercial],[id_depto],[id_municipio],[direccion],[tel1],[actividad],[tipo_pago],[nit],[no_establecimiento],[no_registro_merca],[f_constitucion_cia],[fecha_registro_mercantil],[estado]) " &
+        Dim sql As String = "INSERT INTO  [ENCA_CIA] ([nombre],[nombre_comercial],[id_depto],[id_municipio],[direccion],[tel1],[actividad],[tipo_pago],[nit],[no_establecimiento],[no_registro_merca],[f_constitucion_cia],[fecha_registro_mercantil],[estado]) " &
             " VALUES('" & nombre & "','" & nombrecomercial & "'," & dep & ", " & mun & ",'" & direccion & "','" & telefono & "', " & actividad & ", " & tipoPago & ",'" & nit & "','" & noesta & "','" & noregistro & "','" & fechaCons & "','" & fecharegistro & "',1);"
 
 
@@ -91,7 +91,7 @@ Public Class wsadmin_empresas
         fecharegistro = fechaformat(2) & "-" & fechaformat(1) & "-" & fechaformat(0)
 
         'consulta sql
-        Dim sql As String = "UPDATE [ERPDEVLYNGT].[dbo].[ENCA_CIA] set nombre = '" & nombre & "',nombre_comercial = '" & nombrecomercial & "',id_depto= " & dep & ",id_municipio= " & mun & ",direccion= '" & direccion & "',tel1= '" & telefono & "',actividad= " & actividad & ",tipo_pago= " & tipoPago & ",nit= '" & nit & "',no_establecimiento= " & noesta & ",no_registro_merca= " & noregistro & ",f_constitucion_cia= '" & fechaCons & "',fecha_registro_mercantil= '" & fecharegistro & "' where id_empresa = " & id
+        Dim sql As String = "UPDATE  [ENCA_CIA] set nombre = '" & nombre & "',nombre_comercial = '" & nombrecomercial & "',id_depto= " & dep & ",id_municipio= " & mun & ",direccion= '" & direccion & "',tel1= '" & telefono & "',actividad= " & actividad & ",tipo_pago= " & tipoPago & ",nit= '" & nit & "',no_establecimiento= " & noesta & ",no_registro_merca= " & noregistro & ",f_constitucion_cia= '" & fechaCons & "',fecha_registro_mercantil= '" & fecharegistro & "' where id_empresa = " & id
 
 
 
@@ -111,7 +111,7 @@ Public Class wsadmin_empresas
     <WebMethod()>
     Public Function Inhabilitar(ByVal id As Integer) As String
         'consulta sql
-        Dim sql As String = "UPDATE[ERPDEVLYNGT].[dbo].[ENCA_CIA] set   estado = 0 where id_empresa = " & id
+        Dim sql As String = "UPDATE [ENCA_CIA] set   estado = 0 where id_empresa = " & id
 
 
         Dim result As String = ""

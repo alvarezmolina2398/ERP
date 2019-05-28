@@ -16,9 +16,9 @@ Public Class wsadmin_sucursales
     <WebMethod()>
     Public Function ObtenerDatos() As List(Of datos)
         Dim SQL As String = "SELECT s.id_suc, s.descripcion as sucursal, s.direccion,s.telefono,s.moneda, s.id_correlativo ,s.id_correlativoNota, s.id_correlativoRecibo,s.id_correlativoReciboCopia, s.id_correlativoDebito,s.id_correlativoCopia, s.id_correlativoAbono,  s.id_correlativoAbonoCopia, s.id_correlativoNotaCopia, s.id_correlativoDebitoCopia, r.id_region, r.descripcion as region, e.nombre as empresa, e.id_empresa, isnull(s.codigo,isnull(s.id_sucursal,0)) as codigo " &
-                              " From [ERPDEVLYNGT].[dbo].[SUCURSALES] s " &
-                              " INNER JOIN [ERPDEVLYNGT].[dbo].[REGIONES] r on r.id_region =  s.id_region " &
-                              " INNER JOIN [ERPDEVLYNGT].[dbo].[ENCA_CIA] e on e.id_empresa = s.id_empresa where e.estado = 1 and r.estado = 1 and s.estado = 1 "
+                              " From  [SUCURSALES] s " &
+                              " INNER JOIN  [REGIONES] r on r.id_region =  s.id_region " &
+                              " INNER JOIN  [ENCA_CIA] e on e.id_empresa = s.id_empresa where e.estado = 1 and r.estado = 1 and s.estado = 1 "
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -59,9 +59,9 @@ Public Class wsadmin_sucursales
     <WebMethod()>
     Public Function ObtenerDatosPorID(ByVal idregion As Integer) As List(Of datos)
         Dim SQL As String = "SELECT s.id_suc, s.descripcion as sucursal, s.direccion,s.telefono,s.moneda, s.id_correlativo ,s.id_correlativoNota, s.id_correlativoRecibo,s.id_correlativoReciboCopia, s.id_correlativoDebito,s.id_correlativoCopia, s.id_correlativoAbono,  s.id_correlativoAbonoCopia, s.id_correlativoNotaCopia, s.id_correlativoDebitoCopia, r.id_region, r.descripcion as region, e.nombre as empresa, e.id_empresa, isnull(s.codigo,isnull(s.id_sucursal,0)) as codigo " &
-                              " From [ERPDEVLYNGT].[dbo].[SUCURSALES] s " &
-                              " INNER JOIN [ERPDEVLYNGT].[dbo].[REGIONES] r on r.id_region =  s.id_region " &
-                              " INNER JOIN [ERPDEVLYNGT].[dbo].[ENCA_CIA] e on e.id_empresa = s.id_empresa where e.estado = 1 and r.estado = 1 and s.estado = 1 and r.id_region = " & idregion
+                              " From  [SUCURSALES] s " &
+                              " INNER JOIN  [REGIONES] r on r.id_region =  s.id_region " &
+                              " INNER JOIN  [ENCA_CIA] e on e.id_empresa = s.id_empresa where e.estado = 1 and r.estado = 1 and s.estado = 1 and r.id_region = " & idregion
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -103,9 +103,9 @@ Public Class wsadmin_sucursales
     <WebMethod()>
     Public Function ObtenerDatosPorIDEmpresa(ByVal id As Integer) As List(Of datos)
         Dim SQL As String = "SELECT s.id_suc, s.descripcion as sucursal, s.direccion,s.telefono,s.moneda, s.id_correlativo ,s.id_correlativoNota, s.id_correlativoRecibo,s.id_correlativoReciboCopia, s.id_correlativoDebito,s.id_correlativoCopia, s.id_correlativoAbono,  s.id_correlativoAbonoCopia, s.id_correlativoNotaCopia, s.id_correlativoDebitoCopia, r.id_region, r.descripcion as region, e.nombre as empresa, e.id_empresa, isnull(s.codigo,isnull(s.id_sucursal,0)) as codigo " &
-                              " From [ERPDEVLYNGT].[dbo].[SUCURSALES] s " &
-                              " INNER JOIN [ERPDEVLYNGT].[dbo].[REGIONES] r on r.id_region =  s.id_region " &
-                              " INNER JOIN [ERPDEVLYNGT].[dbo].[ENCA_CIA] e on e.id_empresa = s.id_empresa where e.estado = 1 and r.estado = 1 and s.estado = 1 and e.id_empresa = " & id
+                              " From  [SUCURSALES] s " &
+                              " INNER JOIN  [REGIONES] r on r.id_region =  s.id_region " &
+                              " INNER JOIN  [ENCA_CIA] e on e.id_empresa = s.id_empresa where e.estado = 1 and r.estado = 1 and s.estado = 1 and e.id_empresa = " & id
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -150,9 +150,9 @@ Public Class wsadmin_sucursales
         'consulta sql
 
         If (codigo = "") Then
-            codigo = "(SELECT ISNULL(MAX(codigo),0)+1 FROM  [ERPDEVLYNGT].[dbo].[SUCURSALES] WHERE id_empresa = " & id_empresa & " and id_region = " & id_region & ")"
+            codigo = "(SELECT ISNULL(MAX(codigo),0)+1 FROM   [SUCURSALES] WHERE id_empresa = " & id_empresa & " and id_region = " & id_region & ")"
         End If
-        Dim sql As String = "INSERT INTO  [ERPDEVLYNGT].[dbo].[SUCURSALES] ([id_empresa],[id_region],[id_sucursal],[estado],[descripcion],[id_correlativo],[id_correlativoNota],[id_correlativoDebito],[moneda],[direccion],[codigo],[id_correlativoCopia],[telefono],[id_correlativoAbono],[id_correlativoAbonoCopia],[id_correlativoNotaCopia],[id_correlativoDebitoCopia],[id_correlativoRecibo],[id_correlativoReciboCopia]) " &
+        Dim sql As String = "INSERT INTO   [SUCURSALES] ([id_empresa],[id_region],[id_sucursal],[estado],[descripcion],[id_correlativo],[id_correlativoNota],[id_correlativoDebito],[moneda],[direccion],[codigo],[id_correlativoCopia],[telefono],[id_correlativoAbono],[id_correlativoAbonoCopia],[id_correlativoNotaCopia],[id_correlativoDebitoCopia],[id_correlativoRecibo],[id_correlativoReciboCopia]) " &
        "VALUES (" & id_empresa & ", " & id_region & ", " & codigo & ",1, '" & descripcion & "', " & id_correlativo & ", " & id_correlativoNota & ", " & id_correlativoDebito & "," & moneda & ",'" & direccion & "'," & codigo & ", " & id_correlativoCopia & ", '" & telefono & "', " & id_correlativoAbono & ", " & id_correlativoAbonoCopia & "," & id_correlativoNotaCopia & "," & id_correlativoDebitoCopia & ", " & id_correlativoRecibo & ", " & id_correlativoReciboCopia & ");"
 
 
@@ -179,7 +179,7 @@ Public Class wsadmin_sucursales
                              ByVal id_correlativoNota As Integer, ByVal id_correlativoDebito As Integer, ByVal moneda As Integer, ByVal direccion As String, ByVal id_correlativoCopia As Integer, ByVal id_correlativoAbono As Integer,
                              ByVal telefono As String, ByVal id_correlativoAbonoCopia As Integer, ByVal id_correlativoNotaCopia As Integer, ByVal id_correlativoDebitoCopia As Integer, ByVal id_correlativoRecibo As Integer, ByVal id_correlativoReciboCopia As Integer, ByVal id As Integer) As String
         'consulta sql
-        Dim sql As String = "UPDATE  [ERPDEVLYNGT].[dbo].[SUCURSALES] SET [id_empresa] = " & id_empresa &
+        Dim sql As String = "UPDATE   [SUCURSALES] SET [id_empresa] = " & id_empresa &
                ",[id_region] = " & id_region &
                ",[id_sucursal] = " & codigo &
                ",[descripcion] = '" & descripcion & "' " &
@@ -219,7 +219,7 @@ Public Class wsadmin_sucursales
     <WebMethod()>
     Public Function Inhabilitar(ByVal id As Integer) As String
         'consulta sql
-        Dim sql As String = "UPDATE  [ERPDEVLYNGT].[dbo].[SUCURSALES] set   estado = 0 where id_suc = " & id
+        Dim sql As String = "UPDATE   [SUCURSALES] set   estado = 0 where id_suc = " & id
 
 
         Dim result As String = ""

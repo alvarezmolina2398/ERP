@@ -14,7 +14,7 @@ Public Class wsadmin_monedas
     'Metodo para cargar  los datos
     <WebMethod()>
     Public Function ObtenerDatos() As List(Of datos)
-        Dim SQL As String = "SELECT * FROM [ERPDEVLYNGT].[dbo].[MONEDAS] WHERE estado = 1 "
+        Dim SQL As String = "SELECT * FROM  [MONEDAS] WHERE estado = 1 "
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)

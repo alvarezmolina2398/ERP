@@ -34,8 +34,8 @@ Public Class wsorden_compra
 
 
         Try
-            Dim sql As String = "INSERT INTO [dbo].[ENC_OR_COMPRA]([Usuario],[id_empresa],[Fecha],[Total_Factura],[Id_Proveedor],[observaciones],[moneda],[estatus],[id_suc],[estado],[departamento],[empleado],[tipo],[moneda_local]) " &
-            "VALUES ('" & usuario & "',(select top (1) id_empresa from USUARIO where USUARIO = '" & usuario & "'), getdate(), " & total & "," & proveedor & ", '" & observacion & "'," & moneda & ",1," & sucursal & ",1," & departamento & ", " & solicitante & "," & tipoorden & ",(SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & "))"
+            Dim sql As String = "INSERT INTO  [ENC_OR_COMPRA]([Usuario],[id_empresa],[Fecha],[Total_Factura],[Id_Proveedor],[observaciones],[moneda],[estatus],[id_suc],[estado],[departamento],[empleado],[tipo],[moneda_local]) " &
+            "VALUES ('" & usuario & "',(select top (1) id_empresa from USUARIO where USUARIO = '" & usuario & "'), getdate(), " & total & "," & proveedor & ", '" & observacion & "'," & moneda & ",1," & sucursal & ",1," & departamento & ", " & solicitante & "," & tipoorden & ",(SELECT TOP (1) [moneda] FROM   [SUCURSALES] where id_suc = " & sucursal & "))"
 
 
             'ejecuto primer comando sql
@@ -49,8 +49,8 @@ Public Class wsorden_compra
             For Each item As productos In listproductos
 
                 'INSERTA LOS DATOS 
-                Dim sql2 As String = "INSERT INTO [dbo].[DET_OR_COMPRA] ([id_enc],[Cantidad_Articulo],[Precio_Unit_Articulo],[Sub_Total],[Id_Art],[id_suc],[moneda_local]) " &
-                    "VALUES (" & id & "," & item.cantidad & "," & item.precio & "," & (item.precio * item.cantidad) & "," & item.id & ", " & sucursal & ",(SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")) "
+                Dim sql2 As String = "INSERT INTO  [DET_OR_COMPRA] ([id_enc],[Cantidad_Articulo],[Precio_Unit_Articulo],[Sub_Total],[Id_Art],[id_suc],[moneda_local]) " &
+                    "VALUES (" & id & "," & item.cantidad & "," & item.precio & "," & (item.precio * item.cantidad) & "," & item.id & ", " & sucursal & ",(SELECT TOP (1) [moneda] FROM   [SUCURSALES] where id_suc = " & sucursal & ")) "
 
 
                 comando.CommandText = sql2
@@ -94,7 +94,7 @@ Public Class wsorden_compra
         Try
 
             If Not orden = "" Then
-                Dim sql_update_orden As String = "UPDATE [dbo].[ENC_OR_COMPRA] SET  [estatus] = 0 WHERE id_enc  = " & orden
+                Dim sql_update_orden As String = "UPDATE  [ENC_OR_COMPRA] SET  [estatus] = 0 WHERE id_enc  = " & orden
                 comando.CommandText = sql_update_orden
                 comando.ExecuteNonQuery()
             Else
@@ -103,8 +103,8 @@ Public Class wsorden_compra
 
 
 
-            Dim sql As String = "INSERT INTO [dbo].[enc_compra_exterior]([usuario],[fecha],[facturas],[total_fact],[moneda_local],[idsuc],[iddeplab],[idsolicitante],[moneda],[estado],[tipo],[observaciones],[facturan],[idproveedor],[id_enc_orden]) " &
-            "VALUES ('" & usuario & "', getdate(), '" & serie & "'," & total & ", (SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")," & sucursal & "," & departamento & "," & solicitante & "," & moneda & ", 1," & tipoorden & ",'" & observacion & "','" & factura & "'," & proveedor & "," & orden & ")"
+            Dim sql As String = "INSERT INTO  [enc_compra_exterior]([usuario],[fecha],[facturas],[total_fact],[moneda_local],[idsuc],[iddeplab],[idsolicitante],[moneda],[estado],[tipo],[observaciones],[facturan],[idproveedor],[id_enc_orden]) " &
+            "VALUES ('" & usuario & "', getdate(), '" & serie & "'," & total & ", (SELECT TOP (1) [moneda] FROM   [SUCURSALES] where id_suc = " & sucursal & ")," & sucursal & "," & departamento & "," & solicitante & "," & moneda & ", 1," & tipoorden & ",'" & observacion & "','" & factura & "'," & proveedor & "," & orden & ")"
 
 
             'ejecuto primer comando sql
@@ -119,25 +119,36 @@ Public Class wsorden_compra
             For Each item As productos In listproductos
 
                 'INSERTA LOS DATOS 
-                Dim sql2 As String = "INSERT INTO [dbo].[DET_COMPRA_exterior]([id_enc_orcompra_ing],[id_art],[cantidad],[valor],[moneda_local],[subtotal],[idsuc]) " &
-                    "VALUES (" & id & "," & item.id & "," & item.cantidad & "," & item.precio & ",(SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")," & (item.cantidad * item.precio) & "," & sucursal & ") "
+                Dim sql2 As String = "INSERT INTO  [DET_COMPRA_exterior]([id_enc_orcompra_ing],[id_art],[cantidad],[valor],[moneda_local],[subtotal],[idsuc]) " &
+                    "VALUES (" & id & "," & item.id & "," & item.cantidad & "," & item.precio & ",(SELECT TOP (1) [moneda] FROM   [SUCURSALES] where id_suc = " & sucursal & ")," & (item.cantidad * item.precio) & "," & sucursal & ") "
 
-                Dim cantidad As Integer = ObtenerCantidadProducto(item.id)
+
+
+
+
+
+                Dim bodega As Integer = ObtenerBodega(usuario)
+                Dim cantidad As Integer = ObtenerCantidadProducto(item.id, bodega)
 
                 Dim sql3 = ""
-                Dim sqlbodega = "(select Id_Bod from dbo.Bodegas  where id_suc =  " & sucursal & " and principal = 1)"
+
                 If cantidad < 0 Then
 
-                    sql3 = "INSERT INTO [dbo].[Existencias]([Id_Bod],[Id_Art],[Existencia_Deta_Art]) VALUES(" & sqlbodega & ", " & item.id & "," & item.cantidad & "); " &
-                    "UPDATE [dbo].[Articulo] SET [costo_art] = " & item.precio & " WHERE id_art = " & item.id
+                    sql3 = "INSERT INTO  [Existencias]([Id_Bod],[Id_Art],[Existencia_Deta_Art]) VALUES(" & bodega & ", " & item.id & "," & item.cantidad & "); " &
+                    "UPDATE  [Articulo] SET [costo_art] = " & item.precio & " WHERE id_art = " & item.id
                 Else
-                    Dim precio As Double = ObtenerCostoActual(item.id) * cantidad
+                    Dim SQL_COSTO = "SELECT  costo_art as costo FROM Articulo where id_art  = " & item.id
+                    comando.CommandText = SQL_COSTO
+                    Dim costoacual As Double = comando.ExecuteScalar()
+
+
+                    Dim precio As Double = costoacual * cantidad
                     Dim preciocompra As Double = item.cantidad * item.precio
                     Dim costofinal As Double = (precio + preciocompra)
                     Dim nuevaExistencia As Integer = (cantidad + item.cantidad)
 
-                    sql3 = "UPDATE [dbo].[Existencias] SET Existencia_Deta_Art =  " & nuevaExistencia & " WHERE [Id_Bod] = " & sqlbodega & " and   Id_Art = " & item.id & "; " &
-                    "UPDATE [dbo].[Articulo] SET [costo_art] = " & Math.Round((costofinal / nuevaExistencia), 2) & " WHERE id_art = " & item.id
+                    sql3 = "UPDATE  [Existencias] SET Existencia_Deta_Art =  " & nuevaExistencia & " WHERE [Id_Bod] = " & bodega & " and   Id_Art = " & item.id & "; " &
+                    "UPDATE  [Articulo] SET [costo_art] = " & Math.Round((costofinal / nuevaExistencia), 2) & " WHERE id_art = " & item.id
                 End If
 
 
@@ -196,15 +207,15 @@ Public Class wsorden_compra
 
         Try
             If Not orden = "" Then
-                Dim sql_update_orden As String = "UPDATE [dbo].[ENC_OR_COMPRA] SET  [estatus] = 0 WHERE id_enc  = " & orden
+                Dim sql_update_orden As String = "UPDATE  [ENC_OR_COMPRA] SET  [estatus] = 0 WHERE id_enc  = " & orden
                 comando.CommandText = sql_update_orden
                 comando.ExecuteNonQuery()
             Else
                 orden = "0"
             End If
 
-            Dim sql As String = "INSERT INTO [dbo].[enc_compra_exterior]([usuario],[fecha],[facturas],[total_fact],[moneda_local],[idsuc],[iddeplab],[idsolicitante],[moneda],[estado],[tipo],[observaciones],[facturan],[idproveedor],[fletee],[seguroe],[otrosge],[creditoe],[iva],[fletel],[agentel],[almacenajel],[arancelt],[tasac],[polizan],[fecha_ingreso],[id_enc_orden]) " &
-               "VALUES ('" & usuario & "', getdate(), '" & serie & "'," & total & ", (SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")," & sucursal & "," & departamento & "," & solicitante & "," & moneda & ", 1," & tipoorden & ",'" & observacion & "','" & factura & "'," & proveedor & "," & fletee & "," & seguroe &
+            Dim sql As String = "INSERT INTO  [enc_compra_exterior]([usuario],[fecha],[facturas],[total_fact],[moneda_local],[idsuc],[iddeplab],[idsolicitante],[moneda],[estado],[tipo],[observaciones],[facturan],[idproveedor],[fletee],[seguroe],[otrosge],[creditoe],[iva],[fletel],[agentel],[almacenajel],[arancelt],[tasac],[polizan],[fecha_ingreso],[id_enc_orden]) " &
+               "VALUES ('" & usuario & "', getdate(), '" & serie & "'," & total & ", (SELECT TOP (1) [moneda] FROM   [SUCURSALES] where id_suc = " & sucursal & ")," & sucursal & "," & departamento & "," & solicitante & "," & moneda & ", 1," & tipoorden & ",'" & observacion & "','" & factura & "'," & proveedor & "," & fletee & "," & seguroe &
                ", " & otrosge & "," & creditoe & "," & iva & "," & fletel & "," & agentel & "," & almacenajel & "," & arancelt & "," & tasac & ",'" & polizan & "', '" & fechaingreso & "'," & orden & ")"
 
             'ejecuto primer comando sql
@@ -220,25 +231,29 @@ Public Class wsorden_compra
             For Each item As productos In listproductos
 
                 'INSERTA LOS DATOS 
-                Dim sql2 As String = "INSERT INTO [dbo].[DET_COMPRA_exterior]([id_enc_orcompra_ing],[id_art],[cantidad],[valor],[moneda_local],[subtotal],[idsuc],[arancel]) " &
-                "VALUES (" & id & "," & item.id & "," & item.cantidad & "," & item.precio & ",(SELECT TOP (1) [moneda] FROM [ERPDEVLYNGT].[dbo].[SUCURSALES] where id_suc = " & sucursal & ")," & (item.cantidad * item.precio) & "," & sucursal & "," & item.arancel & ") "
+                Dim sql2 As String = "INSERT INTO  [DET_COMPRA_exterior]([id_enc_orcompra_ing],[id_art],[cantidad],[valor],[moneda_local],[subtotal],[idsuc],[arancel]) " &
+                "VALUES (" & id & "," & item.id & "," & item.cantidad & "," & item.precio & ",(SELECT TOP (1) [moneda] FROM   [SUCURSALES] where id_suc = " & sucursal & ")," & (item.cantidad * item.precio) & "," & sucursal & "," & item.arancel & ") "
 
-                Dim cantidad As Integer = ObtenerCantidadProducto(item.id)
+                Dim bodega As Integer = ObtenerBodega(usuario)
+                Dim cantidad As Integer = ObtenerCantidadProducto(item.id, bodega)
 
                 Dim sql3 = ""
-                Dim sqlbodega = "(select Id_Bod from dbo.Bodegas  where id_suc =  " & sucursal & " and principal = 1)"
                 If cantidad < 0 Then
 
-                    sql3 = "INSERT INTO [dbo].[Existencias]([Id_Bod],[Id_Art],[Existencia_Deta_Art]) VALUES(" & sqlbodega & ", " & item.id & "," & item.cantidad & "); " &
-                "UPDATE [dbo].[Articulo] SET [costo_art] = " & Math.Round((item.precio * (1 + porcentaje))) & " WHERE id_art = " & item.id
+                    sql3 = "INSERT INTO  [Existencias]([Id_Bod],[Id_Art],[Existencia_Deta_Art]) VALUES(" & bodega & ", " & item.id & "," & item.cantidad & "); " &
+                "UPDATE  [Articulo] SET [costo_art] = " & Math.Round((item.precio * (1 + porcentaje))) & " WHERE id_art = " & item.id
                 Else
-                    Dim precio As Double = ObtenerCostoActual(item.id)
+                    Dim SQL_COSTO = "SELECT  costo_art as costo FROM Articulo where id_art  = " & item.id
+                    comando.CommandText = SQL_COSTO
+                    Dim costoacual As Double = comando.ExecuteScalar()
+
+                    Dim precio As Double = costoacual * cantidad
                     Dim preciocompra As Double = (item.cantidad * item.precio) * (1 + porcentaje)
                     Dim costofinal As Double = (precio + preciocompra)
                     Dim nuevaExistencia As Integer = (cantidad + item.cantidad)
 
-                    sql3 = "UPDATE [dbo].[Existencias] SET Existencia_Deta_Art =  " & nuevaExistencia & " WHERE [Id_Bod] = " & sqlbodega & " and   Id_Art = " & item.id & "; " &
-                "UPDATE [dbo].[Articulo] SET [costo_art] = " & Math.Round((costofinal / nuevaExistencia), 2) & " WHERE id_art = " & item.id
+                    sql3 = "UPDATE  [Existencias] SET Existencia_Deta_Art =  " & nuevaExistencia & " WHERE [Id_Bod] = " & bodega & " and   Id_Art = " & item.id & "; " &
+                        "UPDATE  [Articulo] SET [costo_art] = " & Math.Round((costofinal / nuevaExistencia), 2) & " WHERE id_art = " & item.id
                 End If
 
                 'ejecuto segundo comando sql
@@ -271,7 +286,7 @@ Public Class wsorden_compra
     Public Function obtenerDatosOrden(ByVal orden As Integer) As datosorden
         Dim result As datosorden = New datosorden()
 
-        Dim SQL As String = "SELECT p.Id_PRO, p.nit_pro, p.Nom_pro, c.id_suc, c.moneda,c.observaciones, c.departamento, c.tipo, c.empleado, c.Fecha, c.estatus,c.Usuario FROM [ERPDEVLYNGT].[dbo].[ENC_OR_COMPRA] c INNER JOIN [ERPDEVLYNGT].[dbo].[PROVEEDOR] p  ON p.Id_PRO = c.Id_Proveedor where c.estatus = 1  and c.id_enc = " & orden
+        Dim SQL As String = "SELECT p.Id_PRO, p.nit_pro, p.Nom_pro, c.id_suc, c.moneda,c.observaciones, c.departamento, c.tipo, c.empleado, c.Fecha, c.estatus,c.Usuario FROM   [ENC_OR_COMPRA] c INNER JOIN   [PROVEEDOR] p  ON p.Id_PRO = c.Id_Proveedor where c.estatus = 1  and c.id_enc = " & orden
 
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
         Dim Elemento As New datosorden
@@ -291,7 +306,7 @@ Public Class wsorden_compra
                 Elemento.producto = obtenerProductos(orden)
                 Elemento.fecha = TablaEncabezado.Rows(i).Item("fecha").ToString
                 Elemento.estado = TablaEncabezado.Rows(i).Item("estatus")
-                Elemento.estado = TablaEncabezado.Rows(i).Item("Usuario")
+                Elemento.usuario = TablaEncabezado.Rows(i).Item("Usuario")
                 ii = ii + 1
             Next
         Next
@@ -308,7 +323,7 @@ Public Class wsorden_compra
     Public Function obtenerDatosOrdenReimpresion(ByVal orden As Integer) As datosorden
         Dim result As datosorden = New datosorden()
 
-        Dim SQL As String = "SELECT p.Id_PRO, p.nit_pro, p.Nom_pro, c.id_suc, c.moneda,c.observaciones, c.departamento, c.tipo, c.empleado, convert(varchar,c.Fecha,20) as fecha, c.estatus,c.Usuario FROM [ERPDEVLYNGT].[dbo].[ENC_OR_COMPRA] c INNER JOIN [ERPDEVLYNGT].[dbo].[PROVEEDOR] p  ON p.Id_PRO = c.Id_Proveedor where c.estado = 1  and c.id_enc = " & orden
+        Dim SQL As String = "SELECT p.Id_PRO, p.nit_pro, p.Nom_pro, c.id_suc, c.moneda,c.observaciones, c.departamento, c.tipo, c.empleado, convert(varchar,c.Fecha,20) as fecha, c.estatus,c.Usuario FROM   [ENC_OR_COMPRA] c INNER JOIN   [PROVEEDOR] p  ON p.Id_PRO = c.Id_Proveedor where c.estado = 1  and c.id_enc = " & orden
 
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
         Dim Elemento As New datosorden
@@ -606,8 +621,8 @@ Public Class wsorden_compra
             Dim total As Double = 0
 
 
-            Dim SQL As String = "  SELECT c.Cantidad_Articulo, a.cod_Art,a.Des_Art, c.Precio_Unit_Articulo,c.Sub_Total, ISNULL(a.cod_pro1,' -- ') ups FROM [ERPDEVLYNGT].[dbo].[DET_OR_COMPRA]  c  " &
-                "INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo] a on a.id_art = c.Id_Art WHERE id_enc =  " & orden
+            Dim SQL As String = "  SELECT c.Cantidad_Articulo, a.cod_Art,a.Des_Art, c.Precio_Unit_Articulo,c.Sub_Total, ISNULL(a.cod_pro1,' -- ') ups FROM   [DET_OR_COMPRA]  c  " &
+                "INNER JOIN   [Articulo] a on a.id_art = c.Id_Art WHERE id_enc =  " & orden
 
             Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
             Dim Elemento As New datos
@@ -764,7 +779,7 @@ Public Class wsorden_compra
 
     Public Function obtenerProductos(ByVal orden As Integer) As IList(Of productos)
 
-        Dim SQL As String = "SELECT  c.Cantidad_Articulo,c.Precio_Unit_Articulo,c.Id_Art, a.cod_Art, a.Des_Art FROM [ERPDEVLYNGT].[dbo].[DET_OR_COMPRA] c INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo] a ON a.id_art = c.Id_Art where  id_enc = " & orden
+        Dim SQL As String = "SELECT  c.Cantidad_Articulo,c.Precio_Unit_Articulo,c.Id_Art, a.cod_Art, a.Des_Art FROM   [DET_OR_COMPRA] c INNER JOIN   [Articulo] a ON a.id_art = c.Id_Art where  id_enc = " & orden
 
         Dim result As List(Of productos) = New List(Of productos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -1037,8 +1052,8 @@ Public Class wsorden_compra
             Dim total As Double = 0
 
 
-            Dim SQL As String = "  SELECT c.Cantidad_Articulo, a.cod_Art,a.Des_Art, c.Precio_Unit_Articulo,c.Sub_Total, ISNULL(a.cod_pro1,' -- ') ups FROM [ERPDEVLYNGT].[dbo].[DET_OR_COMPRA]  c  " &
-                "INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo] a on a.id_art = c.Id_Art WHERE id_enc =  " & orden
+            Dim SQL As String = "  SELECT c.Cantidad_Articulo, a.cod_Art,a.Des_Art, c.Precio_Unit_Articulo,c.Sub_Total, ISNULL(a.cod_pro1,' -- ') ups FROM   [DET_OR_COMPRA]  c  " &
+                "INNER JOIN   [Articulo] a on a.id_art = c.Id_Art WHERE id_enc =  " & orden
 
             Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
             Dim Elemento As New datos
@@ -1176,17 +1191,14 @@ Public Class wsorden_compra
     End Function
 
     <WebMethod()>
-    Public Function ObtenerCantidadProducto(ByVal idart As Integer) As Integer
-        Dim SQL As String = "Select Existencia_Deta_Art as cantidad from dbo.Existencias where Id_Bod = 1 AND Id_Art = " & idart
+    Public Function ObtenerCantidadProducto(ByVal idart As Integer, ByVal bodega As Integer) As Integer
+        Dim SQL As String = "Select Existencia_Deta_Art as cantidad from  Existencias where Id_Bod = " & bodega & " AND Id_Art = " & idart
 
         Dim result As Integer = -1
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
 
         For i = 0 To TablaEncabezado.Rows.Count - 1
-            For ii = 0 To 1
-
-                result = TablaEncabezado.Rows(i).Item("cantidad")
-            Next
+            result = TablaEncabezado.Rows(i).Item("cantidad")
         Next
 
         Return result
@@ -1195,17 +1207,30 @@ Public Class wsorden_compra
 
 
     <WebMethod()>
+    Public Function ObtenerBodega(ByVal usuario As String) As Integer
+        Dim SQL As String = "select Id_Bod from  Bodegas  where id_suc = (select id_sucursal from USUARIO where USUARIO = '" & usuario & "') and principal = 1 "
+
+        Dim result As Integer = 0
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            result = TablaEncabezado.Rows(i).Item("Id_Bod")
+        Next
+
+        Return result
+
+    End Function
+
+    <WebMethod()>
     Public Function ObtenerCostoActual(ByVal idart As Integer) As Double
-        Dim SQL As String = "SELECT e.Id_Art,  a.costo_art as costo FROM [ERPDEVLYNGT].[dbo].[Existencias] e INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo]  a ON  a.id_art = e.Id_Art where a.id_art  = " & idart
+        Dim SQL As String = "SELECT e.Id_Art,  a.costo_art as costo FROM   [Existencias] e INNER JOIN   [Articulo]  a ON  a.id_art = e.Id_Art where a.id_art  = " & idart
 
         Dim result As Double = 0
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
 
         For i = 0 To TablaEncabezado.Rows.Count - 1
-            For ii = 0 To 1
 
-                result = TablaEncabezado.Rows(i).Item("costo")
-            Next
+            result = TablaEncabezado.Rows(i).Item("costo")
         Next
 
         Return result
@@ -1214,8 +1239,8 @@ Public Class wsorden_compra
 
     <WebMethod()>
     Public Function obtenerDatosEmpresa(ByVal idsuc As Integer) As datos
-        Dim SQL As String = "SELECT  top 1 [id_empresa],[nombre],[nombre_comercial],[direccion],[nit]  FROM [ERPDEVLYNGT].[dbo].[ENCA_CIA] " &
-            " where id_empresa = (SELECT  s.id_empresa  FROM [ERPDEVLYNGT].[dbo].[SUCURSALES]  s where s.id_suc = " & idsuc & ")"
+        Dim SQL As String = "SELECT  top 1 [id_empresa],[nombre],[nombre_comercial],[direccion],[nit]  FROM   [ENCA_CIA] " &
+            " where id_empresa = (SELECT  s.id_empresa  FROM   [SUCURSALES]  s where s.id_suc = " & idsuc & ")"
 
         Dim result As datos = New datos()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -1238,7 +1263,7 @@ Public Class wsorden_compra
 
     <WebMethod()>
     Public Function obtenerDatosProveedor(ByVal id As Integer) As datos
-        Dim SQL As String = "SELECT nit_pro,id_pro, Nom_pro, Dire_pro FROM dbo.PROVEEDOR where id_pro = " & id
+        Dim SQL As String = "SELECT nit_pro,id_pro, Nom_pro, Dire_pro FROM  PROVEEDOR where id_pro = " & id
 
         Dim result As datos = New datos()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)

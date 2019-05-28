@@ -59,6 +59,7 @@ $.ajax({
 });
 
 $(function () {
+
     
     $('#tab-datos').dataTable();
     var fecha = new Date();
@@ -67,6 +68,13 @@ $(function () {
     cargarMetodosdePago();
     cargarTiposTarjeta();
 
+    //evento enter en producto
+    $('.enter').keypress(function (e) {
+        var keycode = (e.keyCode ? e.keyCode : e.which);
+        if (keycode == 13) {
+            llenar();
+        }
+    });
 
 
     $('#nit').val('C/F');
@@ -299,7 +307,6 @@ $(function () {
         $('#regalo').val(null);
     });
 
-
     $('#btn-Pagar').click(function () {
         $('#sub-total').text(parseFloat(totalfac).toFixed(2));
         $('#descuentotxt').text(parseFloat(totaldescuento).toFixed(2));
@@ -344,377 +351,15 @@ $(function () {
     });
 
     $('#bt-buscar').click(function () {
-
+        $('#busqueda').val(null);
+        $('#busqueda').focus();
+        $('#tbod-datos').html(null);
+        $('#tab-datos').dataTable();
         $('#Mdbuscar').modal('toggle')
     });
 
-    $('#bodega').change(function () {
-        if ($(this).val() > 0) {
-
-            //consume el ws para obtener los datos
-            $.ajax({
-                url: 'wstraslados.asmx/ObtenerExistenciasPorBodega',
-                data: '{bodega: ' + $(this).val() + '}',
-                type: 'POST',
-                contentType: 'application/json; charset=utf-8',
-                success: function (msg) {
-                    $('#tbod-datos').html(null);
-                    $.each(msg.d, function () {
-                        var tds = "<tr class='odd'><td>" + this.codigo + "</td><td>" + this.descripcion + "</td><td>" + this.cantidad + "</td>" +
-                            "<td><span data-dismiss='modal' onclick='cargarProducto(" + this.id + ",\"" + this.codigo + "\",\"" + this.descripcion + "\",\"" + this.cantidad + "\","+ this.precio +")' class='btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='AGREGAR AL CARRITO DE COMPRAS' data-original-title='' title ='' > " +
-                            "<i class='material-icons'>shopping_cart</i> " +
-                            "</span></td></tr>"
-
-                        $('#tbod-datos').append(tds);
-
-                    });
-
-
-                    $('#tab-datos').dataTable();
-                    $('[data-toggle="popover"]').popover();
-
-                }
-            });
-
-        }
-    });
-
-
     $('#bt-agregar-pago').click(function () {
-        var tipoPago = $('#tipopago').val();
-
-
-        if (tipoPago != 0) {
-            if (tipoPago == 1) {
-                var efectivo = $('#efectivo').val();
-
-                if (efectivo == "") {
-                    $('.jq-toast-wrap').remove();
-                    $.toast({
-                        heading: '¡ERROR!',
-                        text: "ES NECESARIO INGRESAR EL VALOR EN EFECTIVO",
-                        position: 'bottom-right',
-                        showHideTransition: 'plain',
-                        icon: 'error',
-                        stack: false
-                    });
-                } else {
-                    var info = "";
-                    var camb = 0;
-                    totefectivo = totefectivo + parseFloat(efectivo);
-                    if (pagos.length == 0) {
-                        camb = parseFloat(parseFloat(parseFloat(totefectivo) - (totalfac - totaldescuento)));
-
-                        if (camb < 0) {
-                            info = info = "PAGO DE: " + efectivo;
-                            camb = 0;
-                            
-                        } else {
-                            info = "PAGO DE: " + efectivo + " CAMBIO " + camb;
-                        }
-                        
-                        existefecctivo = false;
-                        
-                    } else {
-                        camb = parseFloat((parseFloat(efectivo) + parseFloat($('#pago').text())) - ((totalfac - totaldescuento)));
-                        info = "DINERO EN EFECTIVO: " + totefectivo + " CAMBIO " + camb;
-                    }
-
-                    if (existefecctivo) {
-                        for (var i = 0; i < pagos.length; i++) {
-
-                            if (pagos[i].tipo == 1)  {
-                                pagos[i].informacion = info;
-                                pagos[i].cambio = camb;
-                                pagos[i].valor = totefectivo;
-                                existefecctivo = true;
-                            }
-                        }
-                    } else {
-                        existefecctivo = true;
-                        var linea = { 'tipo': tipoPago, 'valor': totefectivo, 'informacion': info, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': camb };
-                        pagos.push(linea);
-                    }
-
-                   
-                    $('#tipopago').val(0);
-                }
-
-
-                $('#efectivo').val(null);
-                
-
-            } else if (tipoPago == 2) {
-
-                var nocheque = $('#nocheque').val();
-                var cheque = $('#cheque').val();
-
-
-                if (cheque == "" || nocheque == "" ) {
-                    $('.jq-toast-wrap').remove();
-                    $.toast({
-                        heading: '¡ERROR!',
-                        text: "ES NECESARIO INGRESAR EL VALOR Y LA DESCRIPCION",
-                        position: 'bottom-right',
-                        showHideTransition: 'plain',
-                        icon: 'error',
-                        stack: false
-                    });
-                }
-                else if (parseFloat(cheque) + totalpagoextra + totefectivo > (totalfac - totaldescuento)) {
-                    
-                     $('.jq-toast-wrap').remove();
-                     $.toast({
-                        heading: '¡ERROR!',
-                        text: "ES VALOR DEL CHEQUE SOBREPASA LA CANTIDAD A PAGAR",
-                        position: 'bottom-right',
-                        showHideTransition: 'plain',
-                        icon: 'error',
-                        stack: false
-                    });
-                } else {
-                    totalpagoextra += parseFloat(cheque);
-                    totalcheque += parseFloat(cheque);
-                     var linea = { 'tipo': tipoPago, 'valor': cheque, 'informacion': 'CHEQUE:' + nocheque, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
-                     pagos.push(linea);
-                     $('#tipopago').val(0);
-                }
-
-                $('#nocheque').val(null);
-                $('#cheque').val(null);
-               
-
-
-            } else if (tipoPago == 3) {
-
-                var tipo = $('#tipotarjeta').val();
-                var autorizacion = $('#autorizacion').val();
-                var codigo = $('#codigo').val();
-                var tarjeta = $('#tarjeta').val();
-
-
-                if (tipo == 0 || autorizacion == "" || tarjeta =="") {
-                    $('.jq-toast-wrap').remove();
-                    $.toast({
-                        heading: '¡ERROR!',
-                        text: "ES NECESARIO INGRESAR EL TIPO TARJETA, AUTORIZACION Y TARJETA",
-                        position: 'bottom-right',
-                        showHideTransition: 'plain',
-                        icon: 'error',
-                        stack: false
-                    });
-                } else if (parseFloat(tarjeta) + totalpagoextra + totefectivo > (totalfac - totaldescuento)) {
-                    $('.jq-toast-wrap').remove();
-                    $.toast({
-                       heading: '¡ERROR!',
-                       text: "ES VALOR DEL PAGO EN TARJETA SOBREPASA LA CANTIDAD A PAGAR ",
-                       position: 'bottom-right',
-                       showHideTransition: 'plain',
-                       icon: 'error',
-                       stack: false
-                    });
-                }
-                else {
-                    totalpagoextra += parseFloat(tarjeta);
-                    totaltarjeta += parseFloat(tarjeta);
-                    var informacion = "TIPO DE TARJETA: " + $('#tipotarjeta option:selected').text() + ", AUTORIZACION: " + autorizacion + ", NUMERO DE TARJETA :  " + codigo 
-                    var linea = { 'tipo': tipoPago, 'valor': tarjeta, 'informacion': informacion, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
-                    pagos.push(linea);
-                    $('#tipopago').val(0);
-                }
-
-                
-
-
-                $('#tipotarjeta').val(0);
-                $('#autorizacion').val(null);
-                $('#codigo').val(null);
-                $('#tarjeta').val(null);
-
-
-            } else if (tipoPago == 6) {
-
-                var credito = $('#credito').val();
-                
-
-
-                if (credito == 0) {
-                    $('.jq-toast-wrap').remove();
-                    $.toast({
-                        heading: '¡ERROR!',
-                        text: "ES NECESARIO INGRESAR EL VALOR DEL CREDITO",
-                        position: 'bottom-right',
-                        showHideTransition: 'plain',
-                        icon: 'error',
-                        stack: false
-                    });
-                } else if (parseFloat(credito) + totalpagoextra + totefectivo > (totalfac - totaldescuento)) {
-                    $('.jq-toast-wrap').remove();
-                    $.toast({
-                        heading: '¡ERROR!',
-                        text: "ES VALOR DEL CREDITO EN TARJETA SOBREPASA LA CANTIDAD A PAGAR ",
-                        position: 'bottom-right',
-                        showHideTransition: 'plain',
-                        icon: 'error',
-                        stack: false
-                    });
-                } else {
-                    totalpagoextra += parseFloat(credito);
-                    totalcredito += parseFloat(credito);
-                    var linea = { 'tipo': tipoPago, 'valor': credito, 'informacion': '---', 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
-                    pagos.push(linea);
-                    $('#tipopago').val(0);
-                }
-
-                $('#credito').val(null);
-
-
-            } else if (tipoPago == 7) {
-
-                var formulario = $('#formulario').val();
-                var valorexcersion = $('#valorexcersion').val();
-
-
-                if (formulario == "" || valorexcersion == "") {
-                    $('.jq-toast-wrap').remove();
-                    $.toast({
-                        heading: '¡ERROR!',
-                        text: "ES NECESARIO INGRESAR EL VALOR Y LA DESCRIPCION DEL FORMULARIO",
-                        position: 'bottom-right',
-                        showHideTransition: 'plain',
-                        icon: 'error',
-                        stack: false
-                    });
-                }
-                else if (parseFloat(valorexcersion) +totalpagoextra + totefectivo > (totalfac - totaldescuento)) {
-                    $('.jq-toast-wrap').remove();
-                    $.toast({
-                        heading: '¡ERROR!',
-                        text: "ES VALOR DEL LA EXCERSION DE CREDITO SOBREPASA LA CANTIDAD A PAGAR ",
-                        position: 'bottom-right',
-                        showHideTransition: 'plain',
-                        icon: 'error',
-                        stack: false
-                    });
-                } 
-                else {
-                    totalpagoextra += ParseFloat(valorexcersion);
-                    totalexcersion += ParseFloat(valorexcersion);
-                    var linea = { 'tipo': tipoPago, 'valor': valorexcersion, 'informacion': formulario, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
-                    pagos.push(linea);
-                    $('#tipopago').val(0);
-                }
-
-                $('#formulario').val(null);
-                $('#valorexcersion').val(null);
-
-            } else if (tipoPago == 8) {
-
-                var regaloinfo = $('#regaloinfo').val();
-                var regalo = $('#regalo').val();
-                var extra = $('#idregalo').val();
-                if (regaloinfo == "" || regalo == "") {
-                    $('.jq-toast-wrap').remove();
-                    $.toast({
-                        heading: '¡ERROR!',
-                        text: "ES NECESARIO INGRESAR EL VALOR DEL REGALO Y LA DESCRIPCION",
-                        position: 'bottom-right',
-                        showHideTransition: 'plain',
-                        icon: 'error',
-                        stack: false
-                    });
-                } else if (totefectivo + totalpagoextra  >= (totalfac - totaldescuento)) {
-                    $('.jq-toast-wrap').remove();
-                    $.toast({
-                        heading: '¡ERROR!',
-                        text: "YA ES SUFICIENTE DINERO PARA PAGAR ",
-                        position: 'bottom-right',
-                        showHideTransition: 'plain',
-                        icon: 'error',
-                        stack: false
-                    });
-                }
-                else {
-                    totalpagoextra += parseFloat(regalo);
-                    totalregalo += parseFloat(regalo);
-
-                    
-                    var camb = parseFloat((parseFloat(regalo) + parseFloat($('#pago').text())) - ((totalfac - totaldescuento)));
-                    var pago = 0;
-                    if (camb < 0) {
-                        camb = 0;
-                    } 
-
-                    var linea = { 'tipo': tipoPago, 'valor': regalo, 'informacion': 'FORMULARIO: ' + regaloinfo + " PROXIMO SALDO A FAVOR "+ parseFloat(camb).toFixed(2) , 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': camb, 'extra' : extra};
-                    pagos.push(linea);
-                    $('#tipopago').val(0);
-                }
-
-                
-                $('#regaloinfo').val(null);
-                $('#regalo').val(null);
-
-            }
-
-
-            var total_pago = 0;
-
-            $('#tbody-pago').html(null);
-            for (var i = 0; i < pagos.length; i++) {
-                total_pago += parseFloat(pagos[i].valor);
-                var tds = '<tr><td>' + pagos[i].tipoPagoText + '</td><td>' + pagos[i].informacion + '</td><td style="text-align: right">' + parseFloat(pagos[i].valor).toFixed(2) + '</td><td onclick="eliminarPago(' + i + ',' + pagos[i].tipo +','+pagos[i].valor+')"><center><button class="btn btn-danger btn-sm"><i class="material-icons">delete_forever</i></button></center></td></tr>'
-
-                $('#tbody-pago').append(tds);
-            };
-
-
-            if (total_pago > 0) {
-                td = '<tr><td> -- </td><th> <b>TOTAL</b> </th><td style="text-align: right"><b>' + parseFloat(total_pago).toFixed(2) + '</b></td></tr>'
-                $('#tbody-pago').append(td);
-
-
-                $('#pago').text(parseFloat(total_pago).toFixed(2));
-
-                if (parseFloat(total_pago) >= parseFloat(totalfac - totaldescuento)) {
-                    $('#lb-pago').addClass('text-success');
-                    $('#lb-cambio').addClass('text-success');
-                    $('#lb-pago').removeClass('text-danger');
-                    $('#lb-cambio').removeClass('text-danger');
-                    $('#cambio').text(parseFloat(total_pago - (totalfac - totaldescuento)).toFixed(2));
-                } else {
-                    $('#lb-pago').removeClass('text-success');
-                    $('#lb-cambio').removeClass('text-success');
-                    $('#lb-pago').addClass('text-danger');
-                    $('#lb-cambio').addClass('text-danger');
-                    $('#cambio').text('INSUFICIENTE');
-                }
-
-
-            }
-
-
-            $("#tabla-pagos").footable({
-                "paging": {
-                    "enabled": true,
-                    "position": "center"
-                }
-            });
-            $('#tipopago').val(0);
-            $('.pn-pagos').hide();
-
-        } else {
-
-            $('.jq-toast-wrap').remove();
-            $.toast({
-                heading: '¡ERROR!',
-                text: "ES NECESARIO SELECCIONAR UN METODO DE PAGO",
-                position: 'bottom-right',
-                showHideTransition: 'plain',
-                icon: 'error',
-                stack: false
-            });
-        }
-
+        llenar();
 
     });
 
@@ -828,7 +473,7 @@ $(function () {
             //consume el ws para obtener los datos
             $.ajax({
                 url: 'wsfacturacion.asmx/Facturar',
-                data: '{ usuario : "' + usuario + '",  total : ' + totalfac + ',  descuento : ' + totaldescuento + ',  idcliente : ' + $('#idcliente').val() + ',  diascredito : ' + $('#diascredito').val() + ',  listproductos : ' + JSON.stringify(datos) + ', listpagos : ' + JSON.stringify(pagos) + ',efectivo  : '+ totefectivo  +',  cheques  : '+ totalcheque +',  tarjeta  : '+ totaltarjeta +',  valorExcencion  : '+ totalexcersion +',  valorCertificado  : '+ totalregalo +',  valorCredito  : '+ totalcredito+'}',
+                data: '{ usuario : "' + usuario + '",  total : ' + totalfac + ',  descuento : ' + totaldescuento + ',  idcliente : ' + $('#idcliente').val() + ',  diascredito : ' + $('#diascredito').val() + ',  listproductos : ' + JSON.stringify(datos) + ', listpagos : ' + JSON.stringify(pagos) + ',efectivo  : '+ totefectivo  +',  cheques  : '+ totalcheque +',  tarjeta  : '+ totaltarjeta +',  valorExcencion  : '+ totalexcersion +',  valorCertificado  : '+ totalregalo +',  valorCredito  : '+ totalcredito+', cotizacion : "'+ $('#cotizacion').val() +'"}',
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
                 beforeSend: function () {
@@ -903,6 +548,70 @@ $(function () {
     });
 
 
+    
+
+
+    $('#busqueda').keyup(function () {
+        var texto = $('#busqueda').val();
+        if ($('#bodega').val() > 0 && texto.length > 1) {
+            //consume el ws para obtener los datos
+            $.ajax({
+                url: 'wstraslados.asmx/BuscarExistenciasPorBodega',
+                data: '{bodega: ' + $('#bodega').val() + ', nombre: "' + texto + '"}',
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                success: function (msg) {
+                    $('#tbod-datos').html(null);
+                    $.each(msg.d, function () {
+                        var tds = "<tr class='odd'><td>" + this.codigo + "</td><td>" + this.descripcion + "</td><td>" + this.cantidad + "</td>" +
+                            "<td><span data-dismiss='modal' onclick='cargarProducto(" + this.id + ",\"" + this.codigo + "\",\"" + this.descripcion + "\",\"" + this.cantidad + "\"," + this.precio + ","+ this.tipo+")' class='btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='AGREGAR AL CARRITO DE COMPRAS' data-original-title='' title ='' > " +
+                            "<i class='material-icons'>shopping_cart</i> " +
+                            "</span></td></tr>"
+
+                        $('#tbod-datos').append(tds);
+
+                    });
+
+
+                    $('#tab-datos').dataTable();
+                    $('[data-toggle="popover"]').popover();
+
+                }
+            });
+
+        } else {
+            $('#tbod-datos').html(null);
+            $('#tab-datos').dataTable();
+        }
+    });
+
+
+    $('#cotizacion').keypress(function (e) {
+        var keycode = (e.keyCode ? e.keyCode : e.which);
+        if (keycode == 13) {
+            datos = [];
+            pagos = [];
+
+            totalfac = 0;
+            totaldescuento = 0;
+            totefectivo = 0;
+
+            totefectivo = 0;
+            totalpagoextra = 0;
+
+            totalcheque = 0;
+            totaltarjeta = 0;
+            totalregalo = 0;
+            totalcredito = 0;
+            totalexcersion = 0;
+
+            cargarCot($('#cotizacion').val());
+            cargarProductoCotizacion();
+        }
+        
+    });
+
+
     //evento enter en producto
     $('#producto').keypress(function (e) {
         var keycode = (e.keyCode ? e.keyCode : e.which);
@@ -937,7 +646,7 @@ $(function () {
                                 stack: false
                             });
                         } else {
-                            cargarProducto(msg.d[0].id, msg.d[0].codigo, msg.d[0].descripcion, msg.d[0].cantidad, msg.d[0].precio);
+                            cargarProducto(msg.d[0].id, msg.d[0].codigo, msg.d[0].descripcion, msg.d[0].cantidad, msg.d[0].precio, msg.d[0].tipo);
                         }
                     }
                 });
@@ -946,7 +655,97 @@ $(function () {
 
     });
 
+
+    //acciion para producir
+    $('#btn-producir').click(function () {
+        var codigo = $('#tx-codproducir').text();
+        var descripcion = $('#tx-descproducir').text();
+        var precio = $('#tx-precioproducir').text();
+        var cantidad = $('#cantidad').val();
+        var id = $('#tx-idproducir').text()
+        
+        var producir = $('#tx-canproducir').text();
+        $.ajax({
+            url: 'wscombos.asmx/ProducirCombo',
+            data: '{combo : ' + id + ', usuario : "' + usuario + '",  producir : ' + producir +',  tipo : 2}',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            success: function (msg) {
+                var arr = msg.d.split('|');
+
+                if (arr[0] == 'SUCCESS') {
+
+                    $('.jq-toast-wrap').remove();
+                    $.toast({
+                        heading: '¡EXITO!',
+                        text: "PRODUCCION GENERADA EXITOSAMENTE",
+                        position: 'bottom-right',
+                        showHideTransition: 'plain',
+                        icon: 'info',
+                        stack: false
+                    });
+
+                    $('#MdProducir').modal('toggle');
+
+                    cargarProducto(id, codigo,descripcion,cantidad, precio);
+                } else {
+                    $('.jq-toast-wrap').remove();
+                    $.toast({
+                        heading: '¡ERROR!',
+                        text: arr[1],
+                        position: 'bottom-right',
+                        showHideTransition: 'plain',
+                        icon: 'error',
+                        stack: false
+                    });
+                }
+            }
+        });
+    });
 });
+
+
+
+
+function cargarCot(id) {
+    //consume el ws para obtener los datos
+    $.ajax({
+        url: 'wscotizacion.asmx/obtenerdatosCotizacion',
+        data: '{id : ' + id + '}',
+        type: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        async: false,
+        success: function (msg) {
+
+            $('#nit').val(msg.d.nit);
+            $('#nombre').val(msg.d.cliente);
+            $('#dias').val(msg.d.dias);
+            $('#descuento').val(msg.d.descuento);
+            $('#idcliente').val(msg.d.idcliente);
+            $.each(msg.d.listproductos, function () {
+
+                var cantidad = this.cantidad;
+
+                $.ajax({
+                    url: 'wscotizacion.asmx/obtenerdatosCotizacion',
+                    data: '{id : ' + id + '}',
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    async: false,
+                    success: function (msg) {
+                        if (msg.d > cantidad) {
+                            var linea = { 'cantidad': this.cantidad, 'codigo': this.codigo, 'descripcion': this.descripcion, 'id': this.id, 'precio': this.precio, 'bodega': this.bodega, 'bo': this.bo };
+                            datos.push(linea);
+                        } else {
+
+                        }
+                    }
+                });
+
+            });
+        }
+    });
+}
 
 
 //funcion para cargar las de
@@ -986,6 +785,345 @@ function cargarTipoPedido() {
             });
         }
     });
+
+}
+
+
+function llenar() {
+
+    var tipoPago = $('#tipopago').val();
+
+
+    if (tipoPago != 0) {
+        if (tipoPago == 1) {
+            var efectivo = $('#efectivo').val();
+
+            if (efectivo == "") {
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "ES NECESARIO INGRESAR EL VALOR EN EFECTIVO",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            } else {
+                var info = "";
+                var camb = 0;
+                totefectivo = totefectivo + parseFloat(efectivo);
+                if (pagos.length == 0) {
+                    camb = parseFloat(parseFloat(parseFloat(totefectivo) - (totalfac - totaldescuento)));
+
+                    if (camb < 0) {
+                        info = info = "PAGO DE: " + efectivo;
+                        camb = 0;
+
+                    } else {
+                        info = "PAGO DE: " + efectivo + " CAMBIO " + camb;
+                    }
+
+                    existefecctivo = false;
+
+                } else {
+                    camb = parseFloat((parseFloat(efectivo) + parseFloat($('#pago').text())) - ((totalfac - totaldescuento)));
+                    info = "DINERO EN EFECTIVO: " + totefectivo + " CAMBIO " + camb;
+                }
+
+                if (existefecctivo) {
+                    for (var i = 0; i < pagos.length; i++) {
+
+                        if (pagos[i].tipo == 1) {
+                            pagos[i].informacion = info;
+                            pagos[i].cambio = camb;
+                            pagos[i].valor = totefectivo;
+                            existefecctivo = true;
+                        }
+                    }
+                } else {
+                    existefecctivo = true;
+                    var linea = { 'tipo': tipoPago, 'valor': totefectivo, 'informacion': info, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': camb };
+                    pagos.push(linea);
+                }
+
+
+                $('#tipopago').val(0);
+            }
+
+
+            $('#efectivo').val(null);
+
+
+        } else if (tipoPago == 2) {
+
+            var nocheque = $('#nocheque').val();
+            var cheque = $('#cheque').val();
+
+
+            if (cheque == "" || nocheque == "") {
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "ES NECESARIO INGRESAR EL VALOR Y LA DESCRIPCION",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            }
+            else if (parseFloat(cheque) + totalpagoextra + totefectivo > (totalfac - totaldescuento)) {
+
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "ES VALOR DEL CHEQUE SOBREPASA LA CANTIDAD A PAGAR",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            } else {
+                totalpagoextra += parseFloat(cheque);
+                totalcheque += parseFloat(cheque);
+                var linea = { 'tipo': tipoPago, 'valor': cheque, 'informacion': 'CHEQUE:' + nocheque, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
+                pagos.push(linea);
+                $('#tipopago').val(0);
+            }
+
+            $('#nocheque').val(null);
+            $('#cheque').val(null);
+
+
+
+        } else if (tipoPago == 3) {
+
+            var tipo = $('#tipotarjeta').val();
+            var autorizacion = $('#autorizacion').val();
+            var codigo = $('#codigo').val();
+            var tarjeta = $('#tarjeta').val();
+
+
+            if (tipo == 0 || autorizacion == "" || tarjeta == "") {
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "ES NECESARIO INGRESAR EL TIPO TARJETA, AUTORIZACION Y TARJETA",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            } else if (parseFloat(tarjeta) + totalpagoextra + totefectivo > (totalfac - totaldescuento)) {
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "ES VALOR DEL PAGO EN TARJETA SOBREPASA LA CANTIDAD A PAGAR ",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            }
+            else {
+                totalpagoextra += parseFloat(tarjeta);
+                totaltarjeta += parseFloat(tarjeta);
+                var informacion = "TIPO DE TARJETA: " + $('#tipotarjeta option:selected').text() + ", AUTORIZACION: " + autorizacion + ", NUMERO DE TARJETA :  " + codigo
+                var linea = { 'tipo': tipoPago, 'valor': tarjeta, 'informacion': informacion, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
+                pagos.push(linea);
+                $('#tipopago').val(0);
+            }
+
+
+
+
+            $('#tipotarjeta').val(0);
+            $('#autorizacion').val(null);
+            $('#codigo').val(null);
+            $('#tarjeta').val(null);
+
+
+        } else if (tipoPago == 6) {
+
+            var credito = $('#credito').val();
+
+
+
+            if (credito == 0) {
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "ES NECESARIO INGRESAR EL VALOR DEL CREDITO",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            } else if (parseFloat(credito) + totalpagoextra + totefectivo > (totalfac - totaldescuento)) {
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "ES VALOR DEL CREDITO EN TARJETA SOBREPASA LA CANTIDAD A PAGAR ",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            } else {
+                totalpagoextra += parseFloat(credito);
+                totalcredito += parseFloat(credito);
+                var linea = { 'tipo': tipoPago, 'valor': credito, 'informacion': '---', 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
+                pagos.push(linea);
+                $('#tipopago').val(0);
+            }
+
+            $('#credito').val(null);
+
+
+        } else if (tipoPago == 7) {
+
+            var formulario = $('#formulario').val();
+            var valorexcersion = $('#valorexcersion').val();
+
+
+            if (formulario == "" || valorexcersion == "") {
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "ES NECESARIO INGRESAR EL VALOR Y LA DESCRIPCION DEL FORMULARIO",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            }
+            else if (parseFloat(valorexcersion) + totalpagoextra + totefectivo > (totalfac - totaldescuento)) {
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "ES VALOR DEL LA EXCERSION DE CREDITO SOBREPASA LA CANTIDAD A PAGAR ",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            }
+            else {
+                totalpagoextra += ParseFloat(valorexcersion);
+                totalexcersion += ParseFloat(valorexcersion);
+                var linea = { 'tipo': tipoPago, 'valor': valorexcersion, 'informacion': formulario, 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': 0 };
+                pagos.push(linea);
+                $('#tipopago').val(0);
+            }
+
+            $('#formulario').val(null);
+            $('#valorexcersion').val(null);
+
+        } else if (tipoPago == 8) {
+
+            var regaloinfo = $('#regaloinfo').val();
+            var regalo = $('#regalo').val();
+            var extra = $('#idregalo').val();
+            if (regaloinfo == "" || regalo == "") {
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "ES NECESARIO INGRESAR EL VALOR DEL REGALO Y LA DESCRIPCION",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            } else if (totefectivo + totalpagoextra >= (totalfac - totaldescuento)) {
+                $('.jq-toast-wrap').remove();
+                $.toast({
+                    heading: '¡ERROR!',
+                    text: "YA ES SUFICIENTE DINERO PARA PAGAR ",
+                    position: 'bottom-right',
+                    showHideTransition: 'plain',
+                    icon: 'error',
+                    stack: false
+                });
+            }
+            else {
+                totalpagoextra += parseFloat(regalo);
+                totalregalo += parseFloat(regalo);
+
+
+                var camb = parseFloat((parseFloat(regalo) + parseFloat($('#pago').text())) - ((totalfac - totaldescuento)));
+                var pago = 0;
+                if (camb < 0) {
+                    camb = 0;
+                }
+
+                var linea = { 'tipo': tipoPago, 'valor': regalo, 'informacion': 'FORMULARIO: ' + regaloinfo + " PROXIMO SALDO A FAVOR " + parseFloat(camb).toFixed(2), 'tipoPagoText': $('#tipopago option:selected').text(), 'cambio': camb, 'extra': extra };
+                pagos.push(linea);
+                $('#tipopago').val(0);
+            }
+
+
+            $('#regaloinfo').val(null);
+            $('#regalo').val(null);
+
+        }
+
+
+        var total_pago = 0;
+
+        $('#tbody-pago').html(null);
+        for (var i = 0; i < pagos.length; i++) {
+            total_pago += parseFloat(pagos[i].valor);
+            var tds = '<tr><td>' + pagos[i].tipoPagoText + '</td><td>' + pagos[i].informacion + '</td><td style="text-align: right">' + parseFloat(pagos[i].valor).toFixed(2) + '</td><td onclick="eliminarPago(' + i + ',' + pagos[i].tipo + ',' + pagos[i].valor + ')"><center><button class="btn btn-danger btn-sm"><i class="material-icons">delete_forever</i></button></center></td></tr>'
+
+            $('#tbody-pago').append(tds);
+        };
+
+
+        if (total_pago > 0) {
+            td = '<tr><td> -- </td><th> <b>TOTAL</b> </th><td style="text-align: right"><b>' + parseFloat(total_pago).toFixed(2) + '</b></td></tr>'
+            $('#tbody-pago').append(td);
+
+
+            $('#pago').text(parseFloat(total_pago).toFixed(2));
+
+            if (parseFloat(total_pago) >= parseFloat(totalfac - totaldescuento)) {
+                $('#lb-pago').addClass('text-success');
+                $('#lb-cambio').addClass('text-success');
+                $('#lb-pago').removeClass('text-danger');
+                $('#lb-cambio').removeClass('text-danger');
+                $('#cambio').text(parseFloat(total_pago - (totalfac - totaldescuento)).toFixed(2));
+            } else {
+                $('#lb-pago').removeClass('text-success');
+                $('#lb-cambio').removeClass('text-success');
+                $('#lb-pago').addClass('text-danger');
+                $('#lb-cambio').addClass('text-danger');
+                $('#cambio').text('INSUFICIENTE');
+            }
+
+
+        }
+
+
+        $("#tabla-pagos").footable({
+            "paging": {
+                "enabled": true,
+                "position": "center"
+            }
+        });
+        $('#tipopago').val(0);
+        $('.pn-pagos').hide();
+
+    } else {
+
+        $('.jq-toast-wrap').remove();
+        $.toast({
+            heading: '¡ERROR!',
+            text: "ES NECESARIO SELECCIONAR UN METODO DE PAGO",
+            position: 'bottom-right',
+            showHideTransition: 'plain',
+            icon: 'error',
+            stack: false
+        });
+    }
 
 }
 
@@ -1040,11 +1178,6 @@ function limpiar() {
     $('#nit').val(null);
     $('#idcliente').val(null);
 
-
-
-
-
-
     $('#nit').val('C/F');
     $('#nombre').val('CONSUMIDOR FINAL');
     $('#idcliente').val(1);
@@ -1072,32 +1205,6 @@ function limpiar() {
         "paging": {
             "enabled": true,
             "position": "center"
-        }
-    });
-
-
-    //consume el ws para obtener los datos
-    $.ajax({
-        url: 'wstraslados.asmx/ObtenerExistenciasPorBodega',
-        data: '{bodega: ' + $('#bodega').val() + '}',
-        type: 'POST',
-        contentType: 'application/json; charset=utf-8',
-        success: function (msg) {
-            $('#tbod-datos').html(null);
-            $.each(msg.d, function () {
-                var tds = "<tr class='odd'><td>" + this.codigo + "</td><td>" + this.descripcion + "</td><td>" + this.cantidad + "</td>" +
-                    "<td><span data-dismiss='modal' onclick='cargarProducto(" + this.id + ",\"" + this.codigo + "\",\"" + this.descripcion + "\",\"" + this.cantidad + "\"," + this.precio + ")' class='btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='AGREGAR AL CARRITO DE COMPRAS' data-original-title='' title ='' > " +
-                    "<i class='material-icons'>shopping_cart</i> " +
-                    "</span></td></tr>"
-
-                $('#tbod-datos').append(tds);
-
-            });
-
-
-            $('#tab-datos').dataTable();
-            $('[data-toggle="popover"]').popover();
-
         }
     });
 
@@ -1164,33 +1271,6 @@ function cargarBodegas() {
                     $('#bodega').attr('disabled', true);
 
 
-                    //consume el ws para obtener los datos
-                    $.ajax({
-                        url: 'wstraslados.asmx/ObtenerExistenciasPorBodega',
-                        data: '{bodega: ' + this.id + '}',
-                        type: 'POST',
-                        contentType: 'application/json; charset=utf-8',
-                        success: function (msg) {
-                            $('#tbod-datos').html(null);
-                            $.each(msg.d, function () {
-                                var tds = "<tr class='odd'><td>" + this.codigo + "</td><td>" + this.descripcion + "</td><td>" + this.cantidad + "</td>" +
-                                    "<td><span data-dismiss='modal' onclick='cargarProducto(" + this.id + ",\"" + this.codigo + "\",\"" + this.descripcion + "\",\"" + this.cantidad + "\"," + this.precio + ")' class='btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='AGREGAR AL CARRITO DE COMPRAS' data-original-title='' title ='' > " +
-                                    "<i class='material-icons'>shopping_cart</i> " +
-                                    "</span></td></tr>"
-
-                                $('#tbod-datos').append(tds);
-
-                            });
-
-
-                            $('#tab-datos').dataTable();
-                            $('[data-toggle="popover"]').popover();
-
-                        }
-                    });
-
-
-
                 } else {
                     $('#bodega').append('<option value="' + this.id + '">' + this.descripcion + '</option>')
                 }
@@ -1230,7 +1310,7 @@ function cargarTiposTarjeta() {
     });
 }
 
-function cargarProducto(id, codigo, descripcion, cantidad, precio) {
+function cargarProducto(id, codigo, descripcion, cantidad, precio, tipo) {
     var cantidadTotal = 0;
     var existe = false;
     var posicion = 0;
@@ -1265,16 +1345,29 @@ function cargarProducto(id, codigo, descripcion, cantidad, precio) {
     }
     else if (parseInt($('#cantidad').val()) > parseInt(cantidad)) {
 
-         $('.jq-toast-wrap').remove();
-         $.toast({
-            heading: '¡ERROR!',
-            text: "NO EXISTE LA SUFICIENTE CANTIDAD PARA REDUCIR LA EXISTENCIA DEL PRODUCTO",
-            position: 'bottom-right',
-            showHideTransition: 'plain',
-            icon: 'error',
-            stack: false
-        });
 
+        if (tipo == 1) {
+            
+             $('#tx-idproducir').text(id);
+             $('#tx-canproducir').text(parseInt($('#cantidad').val()) - parseInt(cantidad));
+             $('#tx-codproducir').text(codigo);
+             $('#tx-descproducir').text(descripcion);
+             $('#tx-precioproducir').text(precio);
+             $('#MdProducir').modal('toggle');
+
+         }
+         else {
+            $('.jq-toast-wrap').remove();
+            $.toast({
+                heading: '¡ERROR!',
+                text: "NO EXISTE LA SUFICIENTE CANTIDAD PARA REDUCIR LA EXISTENCIA DEL PRODUCTO",
+                position: 'bottom-right',
+                showHideTransition: 'plain',
+                icon: 'error',
+                stack: false
+            });
+
+         }
     }
     else {
 
@@ -1291,7 +1384,7 @@ function cargarProducto(id, codigo, descripcion, cantidad, precio) {
                 $('.jq-toast-wrap').remove();
                 $.toast({
                     heading: '¡ERROR!',
-                    text: "NO EXISTE LA SUFICIENTE CANTIDAD PARA REDUCIR LA EXISTENCIA DEL PRODUCTO TOT",
+                    text: "NO EXISTE LA SUFICIENTE CANTIDAD PARA REDUCIR LA EXISTENCIA DEL PRODUCTO",
                     position: 'bottom-right',
                     showHideTransition: 'plain',
                     icon: 'error',
@@ -1355,6 +1448,60 @@ function cargarProducto(id, codigo, descripcion, cantidad, precio) {
         $('#precio').val(null);
     }
 }
+
+
+
+function cargarProductoCotizacion() {
+    var total = 0;
+    $('#tbody').html(null);
+
+    for (var i = 0; i < datos.length; i++) {
+        total += parseFloat(datos[i].cantidad) * parseFloat(datos[i].precio);
+        var tds = '<tr><td>' + datos[i].codigo + '</td><td>' + datos[i].descripcion + '</td><td>' + datos[i].bo + '</td><td>' + datos[i].cantidad + '</td><td style="text-align: right">' + parseFloat(datos[i].precio).toFixed(2) + '</td><td style="text-align: right">' + (parseFloat(datos[i].cantidad) * parseFloat(datos[i].precio)).toFixed(2) + '</td><td onclick="eliminar(' + i + ')"><center><button class="btn btn-danger btn-sm"><i class="material-icons">delete_forever</i></button></center></td></tr>'
+
+        $('#tbody').append(tds);
+    };
+
+
+    var descuento = 0;
+
+
+    if ($('#descuento').val() != "") {
+        descuento = parseFloat($('#descuento').val()) / 100;
+    }
+
+    totaldescuento = parseFloat(total * descuento).toFixed(2);
+
+
+    if (total > 0) {
+        td = '<tr><td> -- </td><th> <b>DESCUENTO</b> </th><td><center> --- </center></td><td><center> --- </center><td><center> --- </center></td><td style="text-align: right"><b> - ' + totaldescuento + '</b></td><td></td></tr>'
+        $('#tbody').append(td);
+    }
+
+    if (total > 0) {
+        td = '<tr><td> -- </td><th> <b>TOTAL</b> </th><td><center> --- </center></td><td><center> --- </center><td><center> --- </center></td><td style="text-align: right"><b>' + parseFloat(total - totaldescuento).toFixed(2) + '</b></td><td></td></tr>'
+        $('#tbody').append(td);
+    }
+
+    totalfac = total;
+
+    /* footable  */
+    $("#tb-productos").footable({
+        "paging": {
+            "enabled": true,
+            "position": "center"
+        }
+    });
+
+
+
+    $('#codigoproducto').val(null);
+    $('#cantidad').val(null);
+    $('#producto').val(null);
+    $('#idproducto').val(null);
+    $('#precio').val(null);
+}
+
 
 function eliminarPago(id,tipo,valor) {
     pagos.splice(id, 1)

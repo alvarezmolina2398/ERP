@@ -69,7 +69,7 @@ Public Class wsadmin_cupones
 
     <WebMethod()>
     Public Function ObtenerCorrelatiivo(ByVal id As Integer) As Integer
-        Dim SQL As String = "SELECT correlativo  from [ERPDEVLYNGT].[dbo].[ENCA_CUPON] WHERE id_cupon = " & id
+        Dim SQL As String = "SELECT correlativo  from  [ENCA_CUPON] WHERE id_cupon = " & id
 
         Dim result As Integer = 0
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -104,8 +104,8 @@ Public Class wsadmin_cupones
         comando.Transaction = transaccion
 
         Try
-            Dim total As String = "(SELECT correlativo + " & cantidad & " from [ERPDEVLYNGT].[dbo].[ENCA_CUPON] WHERE id_cupon = " & id & ")"
-            Dim sql As String = "UPDATE [ERPDEVLYNGT].[dbo].[ENCA_CUPON] SET correlativo = " & total & " where id_cupon = " & id
+            Dim total As String = "(SELECT correlativo + " & cantidad & " from  [ENCA_CUPON] WHERE id_cupon = " & id & ")"
+            Dim sql As String = "UPDATE  [ENCA_CUPON] SET correlativo = " & total & " where id_cupon = " & id
 
             Dim correlativo As Integer = ObtenerCorrelatiivo(id)
 
@@ -116,7 +116,7 @@ Public Class wsadmin_cupones
 
             For index As Integer = 1 To cantidad
                 Dim ser As String = serie & "-" & (correlativo + index)
-                Dim str2 As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[DETA_CUPON]([id_cupon], [valor], [saldo], [serie], [estado]) VALUES" &
+                Dim str2 As String = "INSERT INTO  [DETA_CUPON]([id_cupon], [valor], [saldo], [serie], [estado]) VALUES" &
                     "(" & id & "," & valor & "," & valor & ",'" & ser & "',1);"
 
 
@@ -141,7 +141,7 @@ Public Class wsadmin_cupones
 
     <WebMethod()>
     Public Function ObtenerDatos() As List(Of datos)
-        Dim sql = "SELECT  C.id_cupon,C.serie,C.observacion,C.cantidad,C.correlativo,C.estado,C.idcliente,cl.Nom_clt,C.usuario, cl.nit_clt FROM [ERPDEVLYNGT].[dbo].[ENCA_CUPON] C INNER JOIN [ERPDEVLYNGT].[dbo].[CLiente] Cl ON Cl.Id_Clt = c.idcliente  WHERE c.estado = 1"
+        Dim sql = "SELECT  C.id_cupon,C.serie,C.observacion,C.cantidad,C.correlativo,C.estado,C.idcliente,cl.Nom_clt,C.usuario, cl.nit_clt FROM  [ENCA_CUPON] C INNER JOIN  [CLiente] Cl ON Cl.Id_Clt = c.idcliente  WHERE c.estado = 1"
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)
 
@@ -162,7 +162,7 @@ Public Class wsadmin_cupones
 
     <WebMethod()>
     Public Function ObtenerDetalleCupones(ByVal id As Integer) As List(Of detalle)
-        Dim sql = "SELECT [id_cupon_detalle],[id_cupon],[valor],[saldo],[serie],[estado] FROM [ERPDEVLYNGT].[dbo].[DETA_CUPON] WHERE estado  = 1 and id_cupon = " & id & " order by id_cupon_detalle  asc "
+        Dim sql = "SELECT [id_cupon_detalle],[id_cupon],[valor],[saldo],[serie],[estado] FROM  [DETA_CUPON] WHERE estado  = 1 and id_cupon = " & id & " order by id_cupon_detalle  asc "
         Dim result As List(Of detalle) = New List(Of detalle)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)
 

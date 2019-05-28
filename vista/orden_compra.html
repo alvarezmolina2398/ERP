@@ -100,7 +100,7 @@
                             <p class="content-color-secondary page-sub-title" style="margin-left : 20px">Realiza las Ordenes de Compras</p>
                         </div>
                         <div class="col-auto">
-                            <input type="number" placeholder="# ORDEN DE TRABAJO" id="cod-reimprimir" class="form-control" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="ENTER PARA DESCARGAR ORDEN DE COMPRA" />
+                            <input type="number" step="any" min="1"   min="1" placeholder="# ORDEN DE TRABAJO" id="cod-reimprimir" class="form-control" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="ENTER PARA DESCARGAR ORDEN DE COMPRA" />
                             <!--<button type="button" class="btn btn-small btn-rounded btn-success  mb-2" data-toggle="modal" data-target="#MdNuevo" id="mdNew">
                                 <i class="material-icons">local_printshop</i>  REIMPRIMIR
                             </button>-->
@@ -174,7 +174,7 @@
                                         </div>
                                         <div class="col-md-12">
                                             <label for="observacion">Observaciones:</label>
-                                            <textarea id="observacion" type="number" class="form-control" placeholder="Observacion " autocomplete="off" rows="3"></textarea>
+                                            <textarea id="observacion"  class="form-control" placeholder="Observacion " autocomplete="off" rows="3"></textarea>
                                             <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                             <div class="valid-feedback">¡Dato Correcto!</div>
                                             <br />
@@ -190,13 +190,13 @@
                                         </div>
                                         <div class="col-md-2">
                                             <label for="cantidad">Cantidad:</label>
-                                            <input id="cantidad" type="number" class="form-control" placeholder="cantidad " autocomplete="off" />
+                                            <input id="cantidad" type="number" step="any" min="1" class="form-control" placeholder="cantidad " autocomplete="off"  />
                                             <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                             <div class="valid-feedback">¡Dato Correcto!</div>
                                         </div>
                                         <div class="col-md-2">
                                             <label for="precio">Precio:</label>
-                                            <input id="precio" type="number" class="form-control" placeholder="Precio " autocomplete="off" />
+                                            <input id="precio" type="number" step="any" min="1" class="form-control" placeholder="Precio " autocomplete="off"  />
                                             <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                             <div class="valid-feedback">¡Dato Correcto!</div>
                                             <br />

@@ -18,7 +18,7 @@ Public Class wsajuste_mercaderia
     <WebMethod()>
     Public Function ObtenerExistencias() As IList(Of productos)
 
-        Dim sql As String = "  SELECT a.id_art, (e.Existencia_Deta_Art)  - (SELECT isnull(sum(d.cantidad_articulo),0)  FROM [ERPDEVLYNGT].[dbo].[DETA_RESERVA] d WHERE  d.id_Art =  a.id_art and estado = 1) as existencia, a.Des_Art, a.cod_Art  FROM [ERPDEVLYNGT].[dbo].[Existencias] e INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo] a on a.id_art = e.Id_Art  "
+        Dim sql As String = "  SELECT a.id_art, (e.Existencia_Deta_Art)  - (SELECT isnull(sum(d.cantidad_articulo),0)  FROM   [DETA_RESERVA] d WHERE  d.id_Art =  a.id_art and estado = 1) as existencia, a.Des_Art, a.cod_Art  FROM   [Existencias] e INNER JOIN   [Articulo] a on a.id_art = e.Id_Art  "
 
         Dim result As List(Of productos) = New List(Of productos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)
@@ -41,8 +41,8 @@ Public Class wsajuste_mercaderia
 
     <WebMethod()>
     Public Function obtenerDatosEmpresa(ByVal usuario As String) As datos
-        Dim SQL As String = "SELECT  top 1 [id_empresa],[nombre],[nombre_comercial],[direccion],[nit]  FROM [ERPDEVLYNGT].[dbo].[ENCA_CIA] " &
-            " where id_empresa = (select u.id_empresa from [dbo].[USUARIO] u where u.USUARIO = '" & usuario & "')"
+        Dim SQL As String = "SELECT  top 1 [id_empresa],[nombre],[nombre_comercial],[direccion],[nit]  FROM   [ENCA_CIA] " &
+            " where id_empresa = (select u.id_empresa from   [USUARIO] u where u.USUARIO = '" & usuario & "')"
 
         Dim result As datos = New datos()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -263,7 +263,16 @@ Public Class wsajuste_mercaderia
                 Celda.HorizontalAlignment = Element.ALIGN_CENTER
                 TablaDatos.AddCell(Celda)
 
-                Celda = New PdfPCell(New Paragraph(item.cantidad, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
+
+                Dim tipo As String = ""
+
+                If item.tipo = 1 Then
+                    tipo = "+"
+                ElseIf item.tipo = 2 Then
+                    tipo = "-"
+                End If
+
+                Celda = New PdfPCell(New Paragraph(tipo & item.cantidad, FontFactory.GetFont("Arial", 8, iTextSharp.text.Font.NORMAL)))
                 Celda.BorderWidth = 1
                 Celda.BorderWidthTop = 0
                 Celda.BorderWidthRight = 0
@@ -326,7 +335,7 @@ Public Class wsajuste_mercaderia
 
 
         Try
-            Dim sql As String = "INSERT INTO [dbo].[ENC_AJUSTE]([fecha],[usuario],[id_empresa],[observaciones]) VALUES(GETDATE(),'" & usuario & "',(select id_empresa from USUARIO where USUARIO = '" & usuario & "'),'AJUSTE DE MERCADERIA');"
+            Dim sql As String = "INSERT INTO   [ENC_AJUSTE]([fecha],[usuario],[id_empresa],[observaciones]) VALUES(GETDATE(),'" & usuario & "',(select id_empresa from USUARIO where USUARIO = '" & usuario & "'),'AJUSTE DE MERCADERIA');"
 
             'ejecuto primer comando sql
             comando.CommandText = sql
@@ -336,7 +345,6 @@ Public Class wsajuste_mercaderia
             'OBTENEMOS ID DE LA FACTURA
             comando.CommandText = "SELECT @@IDENTITY"
             Dim id As Integer = comando.ExecuteScalar()
-            result = "SUCCESS|"
             For Each item As ajuste_mer In datos_ajuste
                 Dim cantidad As Integer = ObtenerCantidadProducto(item.id, item.bodega)
 
@@ -344,8 +352,8 @@ Public Class wsajuste_mercaderia
                 If item.tipo = 2 Then
                     If cantidad >= item.cantidad Then
                         'INSERTA LOS DATOS 
-                        Dim sql2 As String = "INSERT INTO [dbo].[DET_AJUSTE]([IdAjuste],[Id_Art],[Id_Bod],[cantidad],[observaciones]) VALUES (" & id & "," & item.id & "," & item.bodega & "," & item.cantidad & ",'" & item.observacion & "');" &
-                            " UPDATE [dbo].[Existencias] SET [Existencia_Deta_Art] = " & cantidad - item.cantidad & " WHERE Id_Bod = " & item.bodega & " and Id_Art = " & item.id
+                        Dim sql2 As String = "INSERT INTO   [DET_AJUSTE]([IdAjuste],[Id_Art],[Id_Bod],[cantidad],[observaciones],[tipo]) VALUES (" & id & "," & item.id & "," & item.bodega & "," & item.cantidad & ",'" & item.observacion & "'," & item.tipo & ");" &
+                            " UPDATE   [Existencias] SET [Existencia_Deta_Art] = " & cantidad - item.cantidad & " WHERE Id_Bod = " & item.bodega & " and Id_Art = " & item.id
 
 
                         'ejecuto primer comando sql
@@ -353,18 +361,15 @@ Public Class wsajuste_mercaderia
                         comando.ExecuteNonQuery()
 
 
-
-                        result = result & "AJUSTE GENERADO EXITOSAMENTE EXITOSAMENTE PRODUCTO " & item.descripcion
-
-
                     Else
-                        result = "UN ARTICULO NO SE PUEDE REDUCIR YA QUE NO EXISTE LA SUFICIENTE CANTIDAD DE PRODUCTO ( " & item.codigo & ", CANT EXT " & cantidad & ", CAN RET " & item.cantidad & ")"
-
+                        transaccion.Rollback()
+                        result = "ERROR | UN ARTICULO NO SE PUEDE REDUCIR YA QUE NO EXISTE LA SUFICIENTE CANTIDAD DE PRODUCTO ( " & item.codigo & ", CANT EXT " & cantidad & ", CAN RET " & item.cantidad & ")"
+                        Exit For
                     End If
                 Else
                     'INSERTA LOS DATOS 
-                    Dim sql2 As String = "INSERT INTO [dbo].[DET_AJUSTE]([IdAjuste],[Id_Art],[Id_Bod],[cantidad],[observaciones]) VALUES (" & id & "," & item.id & "," & item.bodega & "," & item.cantidad & ",'" & item.observacion & "');" &
-                        " UPDATE [dbo].[Existencias] SET [Existencia_Deta_Art] = " & cantidad + item.cantidad & " WHERE Id_Bod = " & item.bodega & " and Id_Art = " & item.id
+                    Dim sql2 As String = "INSERT INTO   [DET_AJUSTE]([IdAjuste],[Id_Art],[Id_Bod],[cantidad],[observaciones],[tipo]) VALUES (" & id & "," & item.id & "," & item.bodega & "," & item.cantidad & ",'" & item.observacion & "'," & item.tipo & ");" &
+                        " UPDATE   [Existencias] SET [Existencia_Deta_Art] = " & cantidad + item.cantidad & " WHERE Id_Bod = " & item.bodega & " and Id_Art = " & item.id
 
 
                     'ejecuto primer comando sql
@@ -373,10 +378,13 @@ Public Class wsajuste_mercaderia
 
 
 
-                    result = result & "AJUSTE GENERADO EXITOSAMENTE EXITOSAMENTE PRODUCTO " & item.descripcion & " | " & CrearPDF(usuario, datos_ajuste)
+
 
                 End If
             Next
+
+
+            result = "SUCCESS| AJUSTE GENERADO EXITOSAMENTE EXITOSAMENTE PRODUCTO  | " & CrearPDF(usuario, datos_ajuste)
             transaccion.Commit()
         Catch ex As Exception
             'MsgBox(ex.Message.ToString)
@@ -397,7 +405,7 @@ Public Class wsajuste_mercaderia
 
     <WebMethod()>
     Public Function ObtenerCantidadProducto(ByVal idart As Integer, ByVal idbodega As Integer) As Integer
-        Dim SQL As String = "Select Existencia_Deta_Art as cantidad from ERPDEVLYNGT.dbo.Existencias where Id_Art = " & idart & " and id_bod = " & idbodega
+        Dim SQL As String = "Select Existencia_Deta_Art as cantidad from  Existencias where Id_Art = " & idart & " and id_bod = " & idbodega
 
         Dim result As Integer = 0
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)

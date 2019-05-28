@@ -360,9 +360,6 @@ $(function () {
     });
 
 
-    
-
-
     //accion para cargar la tabla
     $('#bt-agregar').click(function () {
 
@@ -389,9 +386,20 @@ $(function () {
             });
 
         } else {
+            var result = false;
+            for (var i = 0; i < datos.length; i++) {
+               if (datos[i].codigo == $('#codigoproducto').val()) {
+                    datos[i].cantidad = parseInt(datos[i].cantidad) + parseInt($('#cantidad').val());
+                    result = true;
+               }
+            }
 
-            var linea = { 'cantidad': $('#cantidad').val(), 'codigo': $('#codigoproducto').val(), 'descripcion': $('#nomproducto').val(), 'precio': $('#precio').val(), 'id': $('#idproducto').val(), 'arancel': 0 };
-            datos.push(linea);
+            if (!result) {
+                var linea = { 'cantidad': $('#cantidad').val(), 'codigo': $('#codigoproducto').val(), 'descripcion': $('#nomproducto').val(), 'precio': $('#precio').val(), 'id': $('#idproducto').val(), 'arancel': 0 };
+                datos.push(linea);
+            }
+
+           
 
             llenarTablas();
 
@@ -620,9 +628,6 @@ function cargarTipoPedido() {
     });
 
 }
-
-
-
 
 function validarForm() {
     var nit = $('#nit');

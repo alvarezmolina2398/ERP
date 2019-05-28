@@ -156,7 +156,13 @@ $(function () {
     });
 
 
-
+    $('#nit').focus(function (){
+        $('#nit').val(null);
+        $('#nombre').val(null);
+        $('#idcliente').val(null);
+        $('#diascredito').val(null);
+        $('#descuento').val(null);
+    });
 
     //accion para crear los clientes
     $('#btn-Cliente').click(function () {
@@ -400,8 +406,12 @@ $(function () {
         }   
     });
 
-    $('#bt-buscar').click(function () {
 
+    $('#bt-buscar').click(function () {
+        $('#busqueda').val(null);
+        $('#busqueda').focus();
+        $('#tbod-datos').html(null);
+        $('#tab-datos').dataTable();
         $('#Mdbuscar').modal('toggle')
     });
 
@@ -436,7 +446,39 @@ $(function () {
         }
     });
 
+    $('#busqueda').keyup(function () {
+        var texto = $('#busqueda').val();
+        if ($('#bodega').val() > 0 && texto.length > 1) {
+            //consume el ws para obtener los datos
+            $.ajax({
+                url: 'wstraslados.asmx/BuscarExistenciasPorBodega',
+                data: '{bodega: ' + $('#bodega').val() + ', nombre: "' + texto + '"}',
+                type: 'POST',
+                contentType: 'application/json; charset=utf-8',
+                success: function (msg) {
+                    $('#tbod-datos').html(null);
+                    $.each(msg.d, function () {
+                        var tds = "<tr class='odd'><td>" + this.codigo + "</td><td>" + this.descripcion + "</td><td>" + this.cantidad + "</td>" +
+                            "<td><span data-dismiss='modal' onclick='cargarProducto(" + this.id + ",\"" + this.codigo + "\",\"" + this.descripcion + "\",\"" + this.cantidad + "\"," + this.precio + ")' class='btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='AGREGAR AL CARRITO DE COMPRAS' data-original-title='' title ='' > " +
+                            "<i class='material-icons'>shopping_cart</i> " +
+                            "</span></td></tr>"
 
+                        $('#tbod-datos').append(tds);
+
+                    });
+
+
+                    $('#tab-datos').dataTable();
+                    $('[data-toggle="popover"]').popover();
+
+                }
+            });
+
+        } else {
+            $('#tbod-datos').html(null);
+            $('#tab-datos').dataTable();
+        }
+    });
 
     //accion para cargar la tabla
     $('#bt-agregar').click(function () {

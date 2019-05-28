@@ -71,7 +71,7 @@ Public Class wsdevoluciones
 
     <WebMethod()>
     Public Function ObtenerCantidadProducto(ByVal idart As Integer, ByVal idbodega As Integer) As Integer
-        Dim SQL As String = "Select Existencia_Deta_Art As cantidad from ERPDEVLYNGT.dbo.Existencias where Id_Art = " & idart & " And id_bod = " & idbodega
+        Dim SQL As String = "Select Existencia_Deta_Art As cantidad from  Existencias where Id_Art = " & idart & " And id_bod = " & idbodega
 
         Dim result As Integer = 0
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)

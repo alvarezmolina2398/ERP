@@ -600,7 +600,6 @@ $(function () {
 
     });
 
-
     //accion para cargar el cupon del cliente
     $('#regaloinfo').blur(function () {
         $.ajax({
@@ -633,8 +632,6 @@ $(function () {
             }
         });
     });
-
-
 
     //accion  para guardar o actualizar los datos
     $('#btn-guardar').click(function () {
@@ -697,14 +694,14 @@ $(function () {
         }
     });
 
-});
-
-
-
     //accion  para cancelar los datos
     $('#btn-cancelar').click(function () {
         limpiar();
     });
+
+});
+
+    
 
 
 

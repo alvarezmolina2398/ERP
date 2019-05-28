@@ -18,7 +18,9 @@ Public Class wstraslados
     <WebMethod()>
     Public Function ObtenerExistenciasPorBodega(ByVal bodega As Integer) As IList(Of productos)
 
-        Dim sql As String = "  SELECT a.id_art, (e.Existencia_Deta_Art)  - (SELECT isnull(sum(d.cantidad_articulo),0)  FROM [ERPDEVLYNGT].[dbo].[DETA_RESERVA] d WHERE d.Id_Bod = " & bodega & " and d.id_Art =  a.id_art and estado = 1) as existencia, a.Des_Art, a.cod_Art, a.precio1  FROM [ERPDEVLYNGT].[dbo].[Existencias] e INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo] a on a.id_art = e.Id_Art WHERE Id_Bod = " & bodega
+        Dim sql As String = "  SELECT a.id_art, a.requiereProduccion, (e.Existencia_Deta_Art)  - (SELECT isnull(sum(d.cantidad_articulo),0)  " &
+            " FROM   [DETA_RESERVA] d WHERE d.Id_Bod = " & bodega & " and d.id_Art =  a.id_art and estado = 1) as existencia, a.Des_Art, a.cod_Art, a.precio1 " &
+            "  FROM   [Existencias] e INNER JOIN   [Articulo] a on a.id_art = e.Id_Art WHERE a.estado = 1 and  Id_Bod = " & bodega
 
         Dim result As List(Of productos) = New List(Of productos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)
@@ -30,6 +32,61 @@ Public Class wstraslados
                 Elemento.descripcion = TablaEncabezado.Rows(i).Item("Des_Art")
                 Elemento.codigo = TablaEncabezado.Rows(i).Item("cod_Art").ToString
                 Elemento.precio = TablaEncabezado.Rows(i).Item("precio1")
+                Elemento.tipo = TablaEncabezado.Rows(i).Item("requiereProduccion")
+                result.Add(Elemento)
+
+                ii = ii + 1
+            Next
+        Next
+
+        Return result
+    End Function
+
+    <WebMethod()>
+    Public Function ObtenerExistenciasPorBodegaSimple(ByVal bodega As Integer) As IList(Of productos)
+
+        Dim sql As String = "  SELECT a.id_art, (e.Existencia_Deta_Art)  - (SELECT isnull(sum(d.cantidad_articulo),0)  " &
+            " FROM   [DETA_RESERVA] d WHERE d.Id_Bod = " & bodega & " and d.id_Art =  a.id_art and estado = 1) as existencia, a.Des_Art, a.cod_Art, a.precio1 " &
+            "  FROM   [Existencias] e INNER JOIN   [Articulo] a on a.id_art = e.Id_Art WHERE  a.estado = 1 and  a.requiereProduccion = 0  and   Id_Bod = " & bodega
+
+        Dim result As List(Of productos) = New List(Of productos)()
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            For ii = 0 To 1
+                Dim Elemento As productos = New productos()
+                Elemento.id = TablaEncabezado.Rows(i).Item("id_art")
+                Elemento.cantidad = TablaEncabezado.Rows(i).Item("existencia")
+                Elemento.descripcion = TablaEncabezado.Rows(i).Item("Des_Art")
+                Elemento.codigo = TablaEncabezado.Rows(i).Item("cod_Art").ToString
+                Elemento.precio = TablaEncabezado.Rows(i).Item("precio1")
+                result.Add(Elemento)
+
+                ii = ii + 1
+            Next
+        Next
+
+        Return result
+    End Function
+
+
+    <WebMethod()>
+    Public Function BuscarExistenciasPorBodega(ByVal bodega As Integer, ByVal nombre As String) As IList(Of productos)
+
+        Dim sql As String = "  SELECT TOP 10 a.requiereProduccion, a.id_art, (e.Existencia_Deta_Art)  - (SELECT isnull(sum(d.cantidad_articulo),0)  " &
+            " FROM   [DETA_RESERVA] d WHERE d.Id_Bod = " & bodega & " and d.id_Art =  a.id_art and estado = 1) as existencia, a.Des_Art, a.cod_Art, a.precio1 " &
+            "  FROM   [Existencias] e INNER JOIN   [Articulo] a on a.id_art = e.Id_Art WHERE a.estado = 1 and  Id_Bod = " & bodega & " and a.Des_Art LIKE '%" & nombre & "%' "
+
+        Dim result As List(Of productos) = New List(Of productos)()
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            For ii = 0 To 1
+                Dim Elemento As productos = New productos()
+                Elemento.id = TablaEncabezado.Rows(i).Item("id_art")
+                Elemento.cantidad = TablaEncabezado.Rows(i).Item("existencia")
+                Elemento.descripcion = TablaEncabezado.Rows(i).Item("Des_Art")
+                Elemento.codigo = TablaEncabezado.Rows(i).Item("cod_Art").ToString
+                Elemento.precio = TablaEncabezado.Rows(i).Item("precio1")
+                Elemento.tipo = TablaEncabezado.Rows(i).Item("requiereProduccion")
                 result.Add(Elemento)
 
                 ii = ii + 1
@@ -43,7 +100,9 @@ Public Class wstraslados
     <WebMethod()>
     Public Function ObtenerExistenciasPorCodigo(ByVal bodega As Integer, ByVal codigoproducto As String) As IList(Of productos)
 
-        Dim sql As String = "SELECT a.id_art, (e.Existencia_Deta_Art)  - (SELECT isnull(sum(d.cantidad_articulo),0)  FROM [ERPDEVLYNGT].[dbo].[DETA_RESERVA] d WHERE d.Id_Bod = " & bodega & " and d.id_Art =  a.id_art and estado = 1) as existencia, a.Des_Art, a.cod_Art, a.precio1  FROM [ERPDEVLYNGT].[dbo].[Existencias] e INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo] a on a.id_art = e.Id_Art WHERE Id_Bod = " & bodega & " and a.cod_Art = '" & codigoproducto & "' "
+        Dim sql As String = "SELECT a.requiereProduccion, a.id_art, (e.Existencia_Deta_Art)  - (SELECT isnull(sum(d.cantidad_articulo),0)  FROM   [DETA_RESERVA] d " &
+            "WHERE d.Id_Bod = " & bodega & " and d.id_Art =  a.id_art and estado = 1) as existencia, a.Des_Art, a.cod_Art, a.precio1  " &
+            " FROM   [Existencias] e INNER JOIN   [Articulo] a on a.id_art = e.Id_Art WHERE Id_Bod = " & bodega & " and a.cod_Art = '" & codigoproducto & "' AND a.estado = 1 "
 
         Dim result As List(Of productos) = New List(Of productos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)
@@ -55,6 +114,7 @@ Public Class wstraslados
                 Elemento.descripcion = TablaEncabezado.Rows(i).Item("Des_Art")
                 Elemento.codigo = TablaEncabezado.Rows(i).Item("cod_Art").ToString
                 Elemento.precio = TablaEncabezado.Rows(i).Item("precio1")
+                Elemento.tipo = TablaEncabezado.Rows(i).Item("requiereProduccion")
                 result.Add(Elemento)
 
                 ii = ii + 1
@@ -68,7 +128,7 @@ Public Class wstraslados
     <WebMethod()>
     Public Function ObtenerBodegasDiferentesA(ByVal bodega As Integer) As IList(Of productos)
 
-        Dim sql As String = "SELECT [Id_Bod],[Id_suc],[Id_Empsa],[Nom_Bod],[Observ_Bod],[estado],[principal],[receptora],[consignacion] FROM [ERPDEVLYNGT].[dbo].[Bodegas] where estado = 1 and   Id_Bod <> " & bodega
+        Dim sql As String = "SELECT [Id_Bod],[Id_suc],[Id_Empsa],[Nom_Bod],[Observ_Bod],[estado],[principal],[receptora],[consignacion] FROM   [Bodegas] where estado = 1 and   Id_Bod <> " & bodega
 
         Dim result As List(Of productos) = New List(Of productos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(sql)
@@ -348,8 +408,8 @@ Public Class wstraslados
 
     <WebMethod()>
     Public Function obtenerDatosEmpresa(ByVal usuario As String) As datos
-        Dim SQL As String = "SELECT  top 1 [id_empresa],[nombre],[nombre_comercial],[direccion],[nit]  FROM [ERPDEVLYNGT].[dbo].[ENCA_CIA] " &
-            " where id_empresa = (select u.id_empresa from [dbo].[USUARIO] u where u.USUARIO = '" & usuario & "')"
+        Dim SQL As String = "SELECT  top 1 [id_empresa],[nombre],[nombre_comercial],[direccion],[nit]  FROM   [ENCA_CIA] " &
+            " where id_empresa = (select u.id_empresa from  [USUARIO] u where u.USUARIO = '" & usuario & "')"
 
         Dim result As datos = New datos()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -388,7 +448,7 @@ Public Class wstraslados
         comando.Transaction = transaccion
 
         Try
-            Dim sql As String = "INSERT INTO [dbo].[ENC_TRASLADO] ([Fecha],[Usuario],[Observaciones],[id_empresa]) VALUES (getdate(),'" & usuario & "','" & observacion & "',(select id_empresa from USUARIO where USUARIO = '" & usuario & "'))"
+            Dim sql As String = "INSERT INTO  [ENC_TRASLADO] ([Fecha],[Usuario],[Observaciones],[id_empresa]) VALUES (getdate(),'" & usuario & "','" & observacion & "',(select id_empresa from USUARIO where USUARIO = '" & usuario & "'))"
 
             'ejecuto primer comando sql
             comando.CommandText = sql
@@ -403,20 +463,20 @@ Public Class wstraslados
             For Each item As trasladolist In traslado
 
                 'INSERTA LOS DATOS 
-                Dim sql2 As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[DET_TRASLADO]([IdTraslado],[id_art],[Cantidad],[IdBodOrigen],[IdBodDestino]) VALUES(" & id & "," & item.id & "," & item.cantidad & "," & item.origen & "," & item.destino & ")"
+                Dim sql2 As String = "INSERT INTO   [DET_TRASLADO]([IdTraslado],[id_art],[Cantidad],[IdBodOrigen],[IdBodDestino]) VALUES(" & id & "," & item.id & "," & item.cantidad & "," & item.origen & "," & item.destino & ")"
 
                 Dim cantidad As Integer = ObtenerCantidadProducto(item.id, item.destino)
                 Dim precio As Double = ObtenerCostoActual(item.id)
                 Dim sql3 = ""
-                If cantidad = 0 Then
+                If cantidad = -1 Then
 
-                    sql3 = "INSERT INTO [dbo].[Existencias]([Id_Bod],[Id_Art],[Existencia_Deta_Art],[costoAnt]) VALUES(" & item.destino & ", " & item.id & "," & item.cantidad & ", " & precio & "); " &
-                     "UPDATE [dbo].[Existencias] SET [Existencia_Deta_Art] = " & ObtenerCantidadProducto(item.id, item.origen) - item.cantidad & " WHERE [Id_Bod] = " & item.origen & " and   Id_Art = " & item.id & "; "
+                    sql3 = "INSERT INTO  [Existencias]([Id_Bod],[Id_Art],[Existencia_Deta_Art],[costoAnt]) VALUES(" & item.destino & ", " & item.id & "," & item.cantidad & ", " & precio & "); " &
+                     "UPDATE  [Existencias] SET [Existencia_Deta_Art] = " & ObtenerCantidadProducto(item.id, item.origen) - item.cantidad & " WHERE [Id_Bod] = " & item.origen & " and   Id_Art = " & item.id & "; "
                 Else
 
 
-                    sql3 = "UPDATE [ERPDEVLYNGT].[dbo].[Existencias] SET Existencia_Deta_Art =  " & (cantidad + item.cantidad) & ",  costoAnt =  " & precio & "  WHERE [Id_Bod] = " & item.destino & " and   Id_Art = " & item.id & "; " &
-                     "UPDATE [dbo].[Existencias] SET [Existencia_Deta_Art] = " & (ObtenerCantidadProducto(item.id, item.origen) - item.cantidad) & " WHERE [Id_Bod] = " & item.origen & " and   Id_Art = " & item.id & "; "
+                    sql3 = "UPDATE   [Existencias] SET Existencia_Deta_Art =  " & (cantidad + item.cantidad) & ",  costoAnt =  " & precio & "  WHERE [Id_Bod] = " & item.destino & " and   Id_Art = " & item.id & "; " &
+                     "UPDATE  [Existencias] SET [Existencia_Deta_Art] = " & (ObtenerCantidadProducto(item.id, item.origen) - item.cantidad) & " WHERE [Id_Bod] = " & item.origen & " and   Id_Art = " & item.id & "; "
                 End If
 
 
@@ -449,16 +509,14 @@ Public Class wstraslados
 
     <WebMethod()>
     Public Function ObtenerCostoActual(ByVal idart As Integer) As Double
-        Dim SQL As String = "SELECT e.Id_Art, (e.Existencia_Deta_Art* a.costo_art) as costo FROM [ERPDEVLYNGT].[dbo].[Existencias] e INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo]  a ON  a.id_art = e.Id_Art where a.id_art  = " & idart
+        Dim SQL As String = "SELECT  a.costo_art as costo FROM   [Articulo] a where a.id_art  = " & idart
 
         Dim result As Double = 0
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
 
         For i = 0 To TablaEncabezado.Rows.Count - 1
-            For ii = 0 To 1
 
-                result = TablaEncabezado.Rows(i).Item("costo")
-            Next
+            result = TablaEncabezado.Rows(i).Item("costo")
         Next
 
         Return result
@@ -467,16 +525,14 @@ Public Class wstraslados
 
     <WebMethod()>
     Public Function ObtenerCantidadProducto(ByVal idart As Integer, ByVal idbodega As Integer) As Integer
-        Dim SQL As String = "Select count(Existencia_Deta_Art) as cantidad from ERPDEVLYNGT.dbo.Existencias where Id_Art = " & idart & " and id_bod = " & idbodega
+        Dim SQL As String = "Select sum(Existencia_Deta_Art) as cantidad from  Existencias where Id_Art = " & idart & " and id_bod = " & idbodega
 
-        Dim result As Integer = 0
+        Dim result As Integer = -1
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
 
         For i = 0 To TablaEncabezado.Rows.Count - 1
-            For ii = 0 To 1
 
-                result = TablaEncabezado.Rows(i).Item("cantidad")
-            Next
+            result = TablaEncabezado.Rows(i).Item("cantidad")
         Next
 
         Return result
@@ -499,6 +555,7 @@ Public Class wstraslados
         Public codigo As String
         Public cantidad As Integer
         Public precio As Double
+        Public tipo As Integer
     End Class
 
     Public Class trasladolist
@@ -511,6 +568,7 @@ Public Class wstraslados
         Public origen As Integer
         Public destino As Integer
         Public observacion As String
+
     End Class
 
 

@@ -14,7 +14,7 @@ Public Class wstomainventarios
 
     <WebMethod()>
     Public Function ObtenerDatos() As List(Of datos)
-        Dim SQL As String = "SELECT  t.id_enc,t.observaciones,convert(varchar,t.fecha,101) as fecha,convert(varchar,t.fecha,24) as hora,s.id_suc,t.estado,t.usuario,s.descripcion as sucursal FROM [ERPDEVLYNGT].[dbo].[ENC_TOMA_INVENTARIO]  t  INNER JOIN  [ERPDEVLYNGT].[dbo].[SUCURSALES] s on s.id_suc = t.id_suc  where t.estado = 1"
+        Dim SQL As String = "SELECT  t.id_enc,t.observaciones,convert(varchar,t.fecha,101) as fecha,convert(varchar,t.fecha,24) as hora,s.id_suc,t.estado,t.usuario,s.descripcion as sucursal FROM  [ENC_TOMA_INVENTARIO]  t  INNER JOIN   [SUCURSALES] s on s.id_suc = t.id_suc  where t.estado = 1"
 
         Dim result As List(Of [datos]) = New List(Of datos)()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -43,13 +43,13 @@ Public Class wstomainventarios
     <WebMethod()>
     Public Function ObtenerListadoProductos(ByVal bodega As Integer, ByVal sucursal As Integer, ByVal region As Integer) As List(Of inventaro)
         Dim SQL As String = "SELECT a.Des_Art,b.Nom_Bod, a.cod_Art,a.costo_art, e.Existencia_Deta_Art - (SELECT isnull(sum(d.cantidad_articulo),0) " &
-            "FROM [ERPDEVLYNGT].[dbo].[DETA_RESERVA] d WHERE d.Id_Bod = b.Id_Bod and d.id_Art =  a.id_art and estado = 1) as existencia, " &
-            "(select isnull(sum(cantidad),0) from dbo.DET_TOMA_INVENTARIO d inner join dbo.ENC_TOMA_INVENTARIO e on e.id_enc = d.id_enc WHERE e.estado = 1 and d.id_bod = b.Id_Bod and d.id_art = a.id_art and d.estado = 1 )  as tomadeinventario " &
-            "FROM dbo.Existencias e " &
-            "INNER JOIN dbo.Bodegas b ON b.Id_Bod = e.Id_Bod " &
-            "INNER JOIN dbo.Articulo a On a.id_art = e.Id_Art " &
-            "INNER JOIN dbo.SUCURSALES s On s.id_suc = b.Id_suc " &
-            "INNER JOIN dbo.REGIONES r On r.id_region = s.id_region "
+            "FROM  [DETA_RESERVA] d WHERE d.Id_Bod = b.Id_Bod and d.id_Art =  a.id_art and estado = 1) as existencia, " &
+            "(select isnull(sum(cantidad),0) from  DET_TOMA_INVENTARIO d inner join  ENC_TOMA_INVENTARIO e on e.id_enc = d.id_enc WHERE e.estado = 1 and d.id_bod = b.Id_Bod and d.id_art = a.id_art and d.estado = 1 )  as tomadeinventario " &
+            "FROM  Existencias e " &
+            "INNER JOIN  Bodegas b ON b.Id_Bod = e.Id_Bod " &
+            "INNER JOIN  Articulo a On a.id_art = e.Id_Art " &
+            "INNER JOIN  SUCURSALES s On s.id_suc = b.Id_suc " &
+            "INNER JOIN  REGIONES r On r.id_region = s.id_region "
 
 
 
@@ -94,7 +94,7 @@ Public Class wstomainventarios
     <WebMethod()>
     Public Function Insertar(ByVal observacion As String, ByVal usuario As String) As String
 
-        Dim sucursal As String = "SELECT id_sucursal  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
+        Dim sucursal As String = "SELECT id_sucursal  FROM  [USUARIO] where USUARIO = '" & usuario & "'"
         'consulta sql
         Dim sql As String = "INSERT INTO [dbo].[ENC_TOMA_INVENTARIO]([observaciones],[fecha],[id_suc],[estado],[usuario]) VALUES('" & observacion & "',GETDATE(),(" & sucursal & "),1,'" & usuario & "');"
 

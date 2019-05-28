@@ -89,9 +89,6 @@ $(function () {
         $('#MdCrearCliente').modal('toggle')
     });
 
-
-
-
     //accion para crear los clientes
     $('#btn-Cliente').click(function () {
         var nit = $('#nitnew').val();
@@ -335,24 +332,28 @@ $(function () {
     });
 
     $('#bt-buscar').click(function () {
-
+        
+        $('#busqueda').val(null);
+        $('#busqueda').focus();
+        $('#tbod-datos').html(null);
+        $('#tab-datos').dataTable();
         $('#Mdbuscar').modal('toggle')
     });
 
-    $('#bodega').change(function () {
-        if ($(this).val() > 0) {
-
+    $('#busqueda').keyup(function () {
+        var texto = $('#busqueda').val();
+        if ($('#bodega').val() > 0 && texto.length > 1) {
             //consume el ws para obtener los datos
             $.ajax({
-                url: 'wstraslados.asmx/ObtenerExistenciasPorBodega',
-                data: '{bodega: ' + $(this).val() + '}',
+                url: 'wstraslados.asmx/BuscarExistenciasPorBodega',
+                data: '{bodega: ' + $('#bodega').val() + ', nombre: "' + texto + '"}',
                 type: 'POST',
                 contentType: 'application/json; charset=utf-8',
                 success: function (msg) {
                     $('#tbod-datos').html(null);
                     $.each(msg.d, function () {
                         var tds = "<tr class='odd'><td>" + this.codigo + "</td><td>" + this.descripcion + "</td><td>" + this.cantidad + "</td>" +
-                            "<td><span data-dismiss='modal' onclick='cargarProducto(" + this.id + ",\"" + this.codigo + "\",\"" + this.descripcion + "\",\"" + this.cantidad + "\"," + this.precio + ")' class='btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='AGREGAR AL CARRITO DE COMPRAS' data-original-title='' title ='' > " +
+                            "<td><span data-dismiss='modal' onclick='cargarProducto(" + this.id + ",\"" + this.codigo + "\",\"" + this.descripcion + "\",\"" + this.cantidad + "\"," + this.precio + "," + this.tipo + ")' class='btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='AGREGAR AL CARRITO DE COMPRAS' data-original-title='' title ='' > " +
                             "<i class='material-icons'>shopping_cart</i> " +
                             "</span></td></tr>"
 
@@ -367,10 +368,11 @@ $(function () {
                 }
             });
 
+        } else {
+            $('#tbod-datos').html(null);
+            $('#tab-datos').dataTable();
         }
     });
-
-
 
     //accion para cargar la tabla
     $('#bt-agregar').click(function () {
@@ -437,8 +439,6 @@ $(function () {
         }
     });
 
-
-
     //accion  para cancelar los datos
     $('#btn-cancelar').click(function () {
         limpiar();
@@ -479,13 +479,61 @@ $(function () {
                                 stack: false
                             });
                         } else {
-                            cargarProducto(msg.d[0].id, msg.d[0].codigo, msg.d[0].descripcion, msg.d[0].cantidad, msg.d[0].precio);
+                            cargarProducto(msg.d[0].id, msg.d[0].codigo, msg.d[0].descripcion, msg.d[0].cantidad, msg.d[0].precio, msg.d[0].tipo);
                         }
                     }
                 });
             }
         }
 
+    });
+
+
+    //acciion para producir
+    $('#btn-producir').click(function () {
+        var codigo = $('#tx-codproducir').text();
+        var descripcion = $('#tx-descproducir').text();
+        var precio = $('#tx-precioproducir').text();
+        var cantidad = $('#cantidad').val();
+        var id = $('#tx-idproducir').text()
+
+        var producir = $('#tx-canproducir').text();
+        $.ajax({
+            url: 'wscombos.asmx/ProducirCombo',
+            data: '{combo : ' + id + ', usuario : "' + usuario + '",  producir : ' + producir + ',  tipo : 2}',
+            type: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            success: function (msg) {
+                var arr = msg.d.split('|');
+
+                if (arr[0] == 'SUCCESS') {
+
+                    $('.jq-toast-wrap').remove();
+                    $.toast({
+                        heading: '¡EXITO!',
+                        text: "PRODUCCION GENERADA EXITOSAMENTE",
+                        position: 'bottom-right',
+                        showHideTransition: 'plain',
+                        icon: 'info',
+                        stack: false
+                    });
+
+                    $('#MdProducir').modal('toggle');
+
+                    cargarProducto(id, codigo, descripcion, cantidad, precio);
+                } else {
+                    $('.jq-toast-wrap').remove();
+                    $.toast({
+                        heading: '¡ERROR!',
+                        text: arr[1],
+                        position: 'bottom-right',
+                        showHideTransition: 'plain',
+                        icon: 'error',
+                        stack: false
+                    });
+                }
+            }
+        });
     });
 
 });
@@ -582,6 +630,10 @@ function limpiar() {
     $('#nit').val(null);
     $('#idcliente').val(null);
 
+
+    $('#tbod-datos').html(null);
+    $('#tab-datos').dataTable();
+
     datos = [];
     pagos = [];
 
@@ -665,35 +717,6 @@ function cargarBodegas() {
                 if (this.prioridad == 1) {
                     $('#bodega').append('<option value="' + this.id + '" selected>' + this.descripcion + '</option>');
                     $('#bodega').attr('disabled', true);
-
-
-                    //consume el ws para obtener los datos
-                    $.ajax({
-                        url: 'wstraslados.asmx/ObtenerExistenciasPorBodega',
-                        data: '{bodega: ' + this.id + '}',
-                        type: 'POST',
-                        contentType: 'application/json; charset=utf-8',
-                        success: function (msg) {
-                            $('#tbod-datos').html(null);
-                            $.each(msg.d, function () {
-                                var tds = "<tr class='odd'><td>" + this.codigo + "</td><td>" + this.descripcion + "</td><td>" + this.cantidad + "</td>" +
-                                    "<td><span data-dismiss='modal' onclick='cargarProducto(" + this.id + ",\"" + this.codigo + "\",\"" + this.descripcion + "\",\"" + this.cantidad + "\"," + this.precio + ")' class='btn btn-sm btn-outline-info' data-container='body' data-trigger='hover' data-toggle='popover' data-placement='bottom' data-content='AGREGAR AL CARRITO DE COMPRAS' data-original-title='' title ='' > " +
-                                    "<i class='material-icons'>shopping_cart</i> " +
-                                    "</span></td></tr>"
-
-                                $('#tbod-datos').append(tds);
-
-                            });
-
-
-                            $('#tab-datos').dataTable();
-                            $('[data-toggle="popover"]').popover();
-
-                        }
-                    });
-
-
-
                 } else {
                     $('#bodega').append('<option value="' + this.id + '">' + this.descripcion + '</option>')
                 }
@@ -733,7 +756,8 @@ function cargarTiposTarjeta() {
     });
 }
 
-function cargarProducto(id, codigo, descripcion, cantidad, precio) {
+
+function cargarProducto(id, codigo, descripcion, cantidad, precio, tipo) {
     var cantidadTotal = 0;
     var existe = false;
     var posicion = 0;
@@ -768,16 +792,29 @@ function cargarProducto(id, codigo, descripcion, cantidad, precio) {
     }
     else if (parseInt($('#cantidad').val()) > parseInt(cantidad)) {
 
-        $('.jq-toast-wrap').remove();
-        $.toast({
-            heading: '¡ERROR!',
-            text: "NO EXISTE LA SUFICIENTE CANTIDAD PARA REDUCIR LA EXISTENCIA DEL PRODUCTO",
-            position: 'bottom-right',
-            showHideTransition: 'plain',
-            icon: 'error',
-            stack: false
-        });
 
+        if (tipo == 1) {
+
+            $('#tx-idproducir').text(id);
+            $('#tx-canproducir').text(parseInt($('#cantidad').val()) - parseInt(cantidad));
+            $('#tx-codproducir').text(codigo);
+            $('#tx-descproducir').text(descripcion);
+            $('#tx-precioproducir').text(precio);
+            $('#MdProducir').modal('toggle');
+
+        }
+        else {
+            $('.jq-toast-wrap').remove();
+            $.toast({
+                heading: '¡ERROR!',
+                text: "NO EXISTE LA SUFICIENTE CANTIDAD PARA REDUCIR LA EXISTENCIA DEL PRODUCTO",
+                position: 'bottom-right',
+                showHideTransition: 'plain',
+                icon: 'error',
+                stack: false
+            });
+
+        }
     }
     else {
 
@@ -794,7 +831,7 @@ function cargarProducto(id, codigo, descripcion, cantidad, precio) {
                 $('.jq-toast-wrap').remove();
                 $.toast({
                     heading: '¡ERROR!',
-                    text: "NO EXISTE LA SUFICIENTE CANTIDAD PARA REDUCIR LA EXISTENCIA DEL PRODUCTO TOT",
+                    text: "NO EXISTE LA SUFICIENTE CANTIDAD PARA REDUCIR LA EXISTENCIA DEL PRODUCTO",
                     position: 'bottom-right',
                     showHideTransition: 'plain',
                     icon: 'error',

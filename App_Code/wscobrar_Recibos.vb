@@ -35,8 +35,8 @@ Public Class wscobrar_Recibos
             Elemento.id_fac = TablaEncabezado.Rows(i).Item("id_enc")
             Elemento.serie = TablaEncabezado.Rows(i).Item("Serie_Fact")
             Elemento.firma = TablaEncabezado.Rows(i).Item("firma")
-            Elemento.valor = Format(TablaEncabezado.Rows(i).Item("valor"), "##,##0.00")
-            Elemento.saldo = Format(TablaEncabezado.Rows(i).Item("saldos"), "##,##0.00")
+            Elemento.valor = TablaEncabezado.Rows(i).Item("valor")
+            Elemento.saldo = TablaEncabezado.Rows(i).Item("saldos")
             result.Add(Elemento)
         Next
 
@@ -60,11 +60,11 @@ Public Class wscobrar_Recibos
         comando.Transaction = transaccion
 
         Try
-            Dim empresa As String = "SELECT id_empresa  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
-            Dim sucursal As String = "SELECT id_sucursal  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
+            Dim empresa As String = "SELECT id_empresa  FROM  [USUARIO] where USUARIO = '" & usuario & "'"
+            Dim sucursal As String = "SELECT id_sucursal  FROM  [USUARIO] where USUARIO = '" & usuario & "'"
 
             'INSERTAMOS RECIVO
-            Dim strRecivo As String = "INSERT INTO [ERPDEVLYNGT].[dbo].[ENC_RECIBO] ([fecha],[Id_Clt],[Usuario],[empresa],[sucursal],[estado]) " &
+            Dim strRecivo As String = "INSERT INTO  [ENC_RECIBO] ([fecha],[Id_Clt],[Usuario],[empresa],[sucursal],[estado]) " &
                 " VALUES(GETDATE()," & idcliente & ",'" & usuario & "',(" & empresa & "),(" & sucursal & "),1);"
 
             comando.CommandText = strRecivo
@@ -92,13 +92,13 @@ Public Class wscobrar_Recibos
                 Dim strFac_RECIVO As String = ""
                 'SI EL SALDO SERA MAYOR
                 If item.saldo <= total_actual Then
-                    strFac_RECIVO = "INSERT INTO [ERPDEVLYNGT].[dbo].[DET_RECIBO_FACT]([idRecibo],[id_enc],[abonado]) " &
+                    strFac_RECIVO = "INSERT INTO  [DET_RECIBO_FACT]([idRecibo],[id_enc],[abonado]) " &
                     "VALUES(" & idRecivo & "," & item.id_fac & "," & item.saldo & ");"
 
                     total_actual = total_actual - item.saldo
                 Else
                     'SI EL SALDO ES MENOR
-                    strFac_RECIVO = "INSERT INTO [ERPDEVLYNGT].[dbo].[DET_RECIBO_FACT]([idRecibo],[id_enc],[abonado]) " &
+                    strFac_RECIVO = "INSERT INTO  [DET_RECIBO_FACT]([idRecibo],[id_enc],[abonado]) " &
                     "VALUES(" & idRecivo & "," & item.id_fac & "," & total_actual & ");"
 
                     total_actual = 0
@@ -113,7 +113,7 @@ Public Class wscobrar_Recibos
 
             'SI EXISTE SALDO A FAVOR
             If total_actual > 0 Then
-                Dim strFac_RECIVO = "INSERT INTO [ERPDEVLYNGT].[dbo].[DET_RECIBO_FACT]([idRecibo],[abonado]) " &
+                Dim strFac_RECIVO = "INSERT INTO  [DET_RECIBO_FACT]([idRecibo],[abonado]) " &
                     "VALUES(" & idRecivo & "," & total_actual & ");"
 
                 comando.CommandText = strFac_RECIVO
@@ -144,8 +144,8 @@ Public Class wscobrar_Recibos
         Public id_fac As Integer
         Public serie As String
         Public firma As String
-        Public valor As String
-        Public saldo As String
+        Public valor As Double
+        Public saldo As Double
     End Class
 
     Public Class pagos

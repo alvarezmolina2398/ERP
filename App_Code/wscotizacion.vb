@@ -46,12 +46,12 @@ Public Class wscotizacion
             Dim totalsiniva As Double = total / 1.12
             Dim iva As Double = totalsiniva * 0.12
 
-            Dim empresa As String = "SELECT id_empresa  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
-            Dim sucursal As String = "SELECT id_sucursal  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & usuario & "'"
+            Dim empresa As String = "SELECT id_empresa  FROM  [USUARIO] where USUARIO = '" & usuario & "'"
+            Dim sucursal As String = "SELECT id_sucursal  FROM  [USUARIO] where USUARIO = '" & usuario & "'"
 
             'INSERCION DE LA FACTURA
-            Dim str1 As String = "INSERT INTO [dbo].[ENC_COTIZACION]([USUARIO] ,[id_empresa],[Serie_Fact],[Fecha],[firma] ,[Cae],[Total_Factura],[Iva_Factura],[Total_sin_iva],[Total_Descuento],[Id_Clt],[dias_cred],[id_suc],[observaciones]) " &
-                 "VALUES('" & usuario & "', (" & empresa & "),'" & serie & "',GETDATE(),'" & firma & "','" & cae & "'," & total & "," & Math.Round(iva, 2) & "," & Math.Round(totalsiniva, 2) & "," & descuento & "," & idcliente & "," & diascredito & ", (" & sucursal & "),'" & observaciones & "');"
+            Dim str1 As String = "INSERT INTO  [ENC_COTIZACION]([USUARIO] ,[id_empresa],[Fecha],[Total_Factura],[Iva_Factura],[Total_sin_iva],[Total_Descuento],[Id_Clt],[dias_cred],[id_suc],[observaciones],[estado]) " &
+                 "VALUES('" & usuario & "', (" & empresa & "),GETDATE()," & total & "," & Math.Round(iva, 2) & "," & Math.Round(totalsiniva, 2) & "," & descuento & "," & idcliente & "," & diascredito & ", (" & sucursal & "),'" & observaciones & "',1);"
 
 
             'ejecuto primer comando sql
@@ -70,8 +70,8 @@ Public Class wscotizacion
                 Dim totalsinivaDesc As Double = (item.cantidad * item.precio) / 1.12
                 Dim ivadesc As Double = totalsinivaDesc * 0.12
 
-                Dim str2 As String = "INSERT INTO [dbo].[DET_COTIZACION] ([id_enc],[Cantidad_Articulo],[Precio_Unit_Articulo],[Sub_Total],[Descuento],[Iva],[Total_Sin_Iva],[Total],[Id_Art],[costoPromedio],[Id_Bod]) " &
-                    "VALUES(" & id & "," & item.cantidad & "," & item.precio & "," & (item.cantidad * item.precio) & ",0.00," & Math.Round(ivadesc, 2) & "," & Math.Round(totalsinivaDesc, 2) & "," & Math.Round((item.cantidad * item.precio), 2) & "," & item.id & ", ROUND((select CONVERT(varchar,costo_art) from [ERPDEVLYNGT].[dbo].[Articulo] where id_art = " & item.id & "),2)," & item.bodega & ");"
+                Dim str2 As String = "INSERT INTO  [DET_COTIZACION] ([id_enc],[Cantidad_Articulo],[Precio_Unit_Articulo],[Sub_Total],[Descuento],[Iva],[Total_Sin_Iva],[Total],[Id_Art],[costoPromedio],[Id_Bod]) " &
+                    "VALUES(" & id & "," & item.cantidad & "," & item.precio & "," & (item.cantidad * item.precio) & ",0.00," & Math.Round(ivadesc, 2) & "," & Math.Round(totalsinivaDesc, 2) & "," & Math.Round((item.cantidad * item.precio), 2) & "," & item.id & ", ROUND((select CONVERT(varchar,costo_art) from  [Articulo] where id_art = " & item.id & "),2)," & item.bodega & ");"
 
                 comando.CommandText = str2
                 comando.ExecuteNonQuery()
@@ -79,7 +79,7 @@ Public Class wscotizacion
             transaccion.Commit()
 
             Dim id2 As Integer = id
-            result = "SUCCESS| COTIZACION GENERADA EXITOSAMENTE|" & CrearPDF(id2, ObtenerSucursal(usuario), usuario, idcliente, "COTIZACION", descuento)
+            result = "SUCCESS| COTIZACION GENERADA EXITOSAMENTE|" & CrearPDF(id2, ObtenerSucursal(usuario), usuario, idcliente, observaciones, descuento)
 
 
 
@@ -120,7 +120,7 @@ Public Class wscotizacion
 
     <WebMethod()>
     Public Function ObtenerSiguienteCorrelativo(ByVal serie As String) As String
-        Dim SQL As String = "SELECT ISNULL(MAX(CAST(SUBSTRING(firma, 10, 25) As numeric)), 180000000000) + 1 As Siguiente FROM [ERPDEVLYNGT].[dbo].[ENC_FACTURA] WHERE Serie_Fact = '" & serie & "';"
+        Dim SQL As String = "SELECT ISNULL(MAX(CAST(SUBSTRING(firma, 10, 25) As numeric)), 180000000000) + 1 As Siguiente FROM  [ENC_FACTURA] WHERE Serie_Fact = '" & serie & "';"
 
         Dim result As String = ""
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -137,7 +137,7 @@ Public Class wscotizacion
     Public Function Reimprimir(ByVal idcotizacion As Integer) As String
         Dim result As String = ""
         Try
-            Dim SQL As String = "SELECT id_enc,USUARIO,Id_Clt,id_suc,ISNULL(observaciones,'SIN OBSERVACIONES') as observaciones,[Total_Descuento] FROM [ERPDEVLYNGT].[dbo].[ENC_COTIZACION] where id_enc = " & idcotizacion
+            Dim SQL As String = "SELECT id_enc,USUARIO,Id_Clt,id_suc,ISNULL(observaciones,'SIN OBSERVACIONES') as observaciones,[Total_Descuento] FROM  [ENC_COTIZACION] where id_enc = " & idcotizacion
 
             Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
 
@@ -404,8 +404,8 @@ Public Class wscotizacion
             Dim total As Double = 0
 
 
-            Dim SQL As String = "  SELECT c.Cantidad_Articulo, a.cod_Art,a.Des_Art, c.Precio_Unit_Articulo,c.Sub_Total, ISNULL(a.cod_pro1,' -- ') ups FROM [ERPDEVLYNGT].[dbo].[DET_COTIZACION]  c  " &
-                "INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo] a on a.id_art = c.Id_Art WHERE id_enc =  " & cotizacion
+            Dim SQL As String = "  SELECT c.Cantidad_Articulo, a.cod_Art,a.Des_Art, c.Precio_Unit_Articulo,c.Sub_Total, ISNULL(a.cod_pro1,' -- ') ups FROM  [DET_COTIZACION]  c  " &
+                "INNER JOIN  [Articulo] a on a.id_art = c.Id_Art WHERE id_enc =  " & cotizacion
 
             Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
             Dim Elemento As New datos
@@ -579,7 +579,7 @@ Public Class wscotizacion
 
     <WebMethod()>
     Public Function ObtenerCantidadProducto(ByVal idart As Integer) As Integer
-        Dim SQL As String = "Select Existencia_Deta_Art as cantidad from dbo.Existencias where Id_Bod = 1 AND Id_Art = " & idart
+        Dim SQL As String = "Select Existencia_Deta_Art as cantidad from  Existencias where Id_Bod = 1 AND Id_Art = " & idart
 
         Dim result As Integer = 0
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -598,7 +598,7 @@ Public Class wscotizacion
 
     <WebMethod()>
     Public Function ObtenerCostoActual(ByVal idart As Integer) As Double
-        Dim SQL As String = "SELECT e.Id_Art,  a.costo_art as costo FROM [ERPDEVLYNGT].[dbo].[Existencias] e INNER JOIN [ERPDEVLYNGT].[dbo].[Articulo]  a ON  a.id_art = e.Id_Art where a.id_art  = " & idart
+        Dim SQL As String = "SELECT e.Id_Art,  a.costo_art as costo FROM  [Existencias] e INNER JOIN  [Articulo]  a ON  a.id_art = e.Id_Art where a.id_art  = " & idart
 
         Dim result As Double = 0
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -617,7 +617,7 @@ Public Class wscotizacion
 
     <WebMethod()>
     Public Function ObtenerSucursal(ByVal idusuario As String) As Integer
-        Dim SQL As String = "SELECT id_sucursal  FROM [ERPDEVLYNGT].[dbo].[USUARIO] where USUARIO = '" & idusuario & "' "
+        Dim SQL As String = "SELECT id_sucursal  FROM  [USUARIO] where USUARIO = '" & idusuario & "' "
 
         Dim result As Integer = 0
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -635,8 +635,8 @@ Public Class wscotizacion
 
     <WebMethod()>
     Public Function obtenerDatosEmpresa(ByVal idsuc As Integer) As datos
-        Dim SQL As String = "SELECT  top 1 [id_empresa],[nombre],[nombre_comercial],[direccion],[nit]  FROM [ERPDEVLYNGT].[dbo].[ENCA_CIA] " &
-            " where id_empresa = (SELECT  s.id_empresa  FROM [ERPDEVLYNGT].[dbo].[SUCURSALES]  s where s.id_suc = " & idsuc & ")"
+        Dim SQL As String = "SELECT  top 1 [id_empresa],[nombre],[nombre_comercial],[direccion],[nit]  FROM  [ENCA_CIA] " &
+            " where id_empresa = (SELECT  s.id_empresa  FROM  [SUCURSALES]  s where s.id_suc = " & idsuc & ")"
 
         Dim result As datos = New datos()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -659,7 +659,7 @@ Public Class wscotizacion
 
     <WebMethod()>
     Public Function obtenerDatosCliente(ByVal id As Integer) As datos
-        Dim SQL As String = "SELECT nit_clt,Id_Clt, Nom_clt, Dire_Clt FROM dbo.CLiente where Id_Clt = " & id
+        Dim SQL As String = "SELECT nit_clt,Id_Clt, Nom_clt, Dire_Clt FROM  CLiente where Id_Clt = " & id
 
         Dim result As datos = New datos()
         Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
@@ -679,6 +679,121 @@ Public Class wscotizacion
 
     End Function
 
+
+    'metodo para obtener las listas de cotizaciones
+    <WebMethod()>
+    Public Function Inhabilitar(ByVal id As Integer) As String
+        'consulta sql
+        Dim sql As String = "UPDATE ENC_COTIZACION SET estado = 0 where id_enc = " & id
+
+
+        Dim result As String = ""
+
+
+        'ejecuta el query a travez de la clase manipular 
+        If (manipular.EjecutaTransaccion1(sql)) Then
+            result = "SUCCESS|Datos Actualizados Correctamente"
+        Else
+            result = "ERROR|Sucedio Un error, Por Favor Comuníquese con el Administrador. "
+        End If
+
+
+        Return result
+    End Function
+
+    'metodo para obtener las listas de cotizaciones
+    <WebMethod()>
+    Public Function ObtenerCotizaciones(ByVal fechainicio As String, ByVal fechafin As String) As List(Of datoscotizacion)
+
+        Dim fechaformat As String() = fechainicio.Split("/")
+        fechainicio = fechaformat(2) & "-" & fechaformat(1) & "-" & fechaformat(0)
+
+        fechaformat = fechafin.Split("/")
+        fechafin = fechaformat(2) & "-" & fechaformat(1) & "-" & fechaformat(0)
+
+
+        Dim SQL As String = "SELECT  c.id_enc ,c.USUARIO, " &
+            " convert(varchar,c.Fecha,101) + ' ' + convert(varchar,c.Fecha,108) as fecha,c.Total_Factura,c.Total_Descuento,cl.nit_clt,cl.Nom_clt,c.dias_cred,c.id_suc,c.observaciones, s.descripcion " &
+            " FROM ENC_COTIZACION c INNER JOIN CLiente  cl on cl.Id_Clt = c.Id_Clt  INNER JOIN SUCURSALES s on s.id_suc = c.id_suc where c.estado = 1 and c.fecha between '" & fechainicio & " 00:00:00' and '" & fechafin & " 23:59:59'"
+
+        Dim result As List(Of datoscotizacion) = New List(Of datoscotizacion)
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            Dim Elemento As New datoscotizacion
+            Elemento.id = TablaEncabezado.Rows(i).Item("id_enc")
+            Elemento.usuario = TablaEncabezado.Rows(i).Item("USUARIO")
+            Elemento.fecha = TablaEncabezado.Rows(i).Item("fecha")
+            Elemento.cliente = TablaEncabezado.Rows(i).Item("Nom_clt")
+            Elemento.nit = TablaEncabezado.Rows(i).Item("nit_clt")
+            Elemento.total = Format(TablaEncabezado.Rows(i).Item("Total_Factura") + TablaEncabezado.Rows(i).Item("Total_Descuento"), "###,##0.00")
+            Elemento.dias = TablaEncabezado.Rows(i).Item("dias_cred")
+            Elemento.sucursal = TablaEncabezado.Rows(i).Item("descripcion")
+            Elemento.descuento = TablaEncabezado.Rows(i).Item("Total_Descuento")
+            Elemento.listproductos = obtenerListProductos(Elemento.id)
+            result.Add(Elemento)
+        Next
+        Return result
+    End Function
+
+    <WebMethod()>
+    Public Function obtenerListProductos(ByVal cotizacion As Integer) As IList(Of productos)
+        Dim SQL As String = "SELECT c.Cantidad_Articulo,c.Precio_Unit_Articulo,c.Id_Art, a.cod_Art, a.Des_Art, b.Id_Bod,b.Nom_Bod FROM  [DET_COTIZACION] c  INNER JOIN  [Articulo] a ON a.id_art = c.Id_Art INNER JOIN  [Bodegas] b ON b.Id_Bod = c.Id_Bod   where  id_enc = " & cotizacion
+
+        Dim result As List(Of productos) = New List(Of productos)()
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+            Dim Elemento As productos = New productos()
+            Elemento.id = TablaEncabezado.Rows(i).Item("Id_Art")
+            Elemento.cantidad = TablaEncabezado.Rows(i).Item("Cantidad_Articulo")
+            Elemento.precio = TablaEncabezado.Rows(i).Item("Precio_Unit_Articulo")
+            Elemento.descripcion = TablaEncabezado.Rows(i).Item("Des_Art")
+            Elemento.codigo = TablaEncabezado.Rows(i).Item("cod_Art")
+            Elemento.bo = TablaEncabezado.Rows(i).Item("Nom_Bod")
+            Elemento.bodega = TablaEncabezado.Rows(i).Item("Id_Bod")
+            result.Add(Elemento)
+        Next
+
+        Return result
+    End Function
+
+    <WebMethod()>
+    Public Function obtenerdatosCotizacion(ByVal id As Integer) As datoscotizacion
+        Dim SQL As String = "SELECT c.Id_Clt, cl.Nom_clt, cl.Dias_Credito,cl.nit_clt, cl.Descuento_Porc FROM ENC_COTIZACION c INNER JOIN CLiente Cl On Cl.Id_Clt = c.Id_Clt WHERE id_enc = " & id
+
+        Dim Elemento As datoscotizacion = New datoscotizacion()
+        Dim TablaEncabezado As DataTable = manipular.ObtenerDatos(SQL)
+        For i = 0 To TablaEncabezado.Rows.Count - 1
+
+            Elemento.idcliente = TablaEncabezado.Rows(i).Item("Id_Clt")
+            Elemento.nit = TablaEncabezado.Rows(i).Item("nit_clt")
+            Elemento.cliente = TablaEncabezado.Rows(i).Item("Nom_clt")
+            Elemento.dias = TablaEncabezado.Rows(i).Item("Dias_Credito")
+            Elemento.descuento = TablaEncabezado.Rows(i).Item("Descuento_Porc")
+            Elemento.listproductos = obtenerListProductos(id)
+
+
+        Next
+        Return Elemento
+    End Function
+
+
+    Public Class datoscotizacion
+        Public id As Integer
+        Public idcliente As Integer
+        Public nit As String
+        Public cliente As String
+        Public dias As Integer
+        Public bodega As Integer
+        Public usuario As String
+        Public fecha As String
+        Public total As String
+        Public descuento As Double
+        Public sucursal As String
+        Public mensaje As String
+        Public listproductos As List(Of productos)
+    End Class
+
     Public Class datos
         Public id As Integer
         Public descripcion As String
@@ -694,7 +809,8 @@ Public Class wscotizacion
         Public bo As String
         Public bodega As Integer
         Public precio As Double
-
+        Public descripcion As String
+        Public codigo As String
     End Class
 
 

@@ -31,6 +31,53 @@
     <!-- Bootstra tour CSS -->
     <link rel="stylesheet" href="../estilo/bootstrap_tour/css/bootstrap-tour-standalone.css" />
 
+    <script>
+
+        function esNumInt(ev, el) {
+            /* ev: evento; el: elemento; */
+            tecla = (document.all) ? ev.keyCode : ev.which;
+
+            // Permite un solo punto decimal
+            if (el.value.indexOf('.') == -1 ? tecla == 46 : false) { return false; }
+
+            // Permite números negativos (después de escribir un número)
+            //if (tecla == 45 && el.value !== '') { el.value = (-1) * el.value; }
+
+            // Permite tecla de retroceso (borrar)
+            if (tecla == 8) { return true; }
+
+            // Permite tecla Tab
+            if (tecla == 9) { return true; }
+
+            // Patrón de entrada: solo acepta numeros positivos
+            patron = /[0-9]/;
+            tecla_fin = String.fromCharCode(tecla);
+            return patron.test(tecla_fin);
+        }
+
+        function esNumDeci(ev, el) {
+            /* ev: evento; el: elemento; */
+            tecla = (document.all) ? ev.keyCode : ev.which;
+
+            // Permite un solo punto decimal
+            if (el.value.indexOf('.') == -1 ? tecla == 46 : false) { return true; }
+
+            // Permite números negativos (después de escribir un número)
+            //if (tecla == 45 && el.value !== '') { el.value = (-1) * el.value; }
+
+            // Permite tecla de retroceso (borrar)
+            if (tecla == 8) { return true; }
+
+            // Permite tecla Tab
+            if (tecla == 9) { return true; }
+
+            // Patrón de entrada: solo acepta numeros positivos
+            patron = /[0-9]/;
+            tecla_fin = String.fromCharCode(tecla);
+            return patron.test(tecla_fin);
+        }
+
+    </script>
 
     <!-- jvector map CSS -->
     <link rel="stylesheet" href="../estilo/jquery-jvectormap/jquery-jvectormap-2.0.3.css" />
@@ -38,9 +85,9 @@
 
 
     <!-- app CSS -->
-    <link id="theme" rel="stylesheet" href="../css/dark-bluesidebar.css" type="text/css">
+    <link id="theme" rel="stylesheet" href="../css/dark-bluesidebar.css" type="text/css" />
     <!-- dataTable CSS -->
-    <link rel="stylesheet" href="../estilo/DataTables-1.10.18/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="../estilo/DataTables-1.10.18/css/dataTables.bootstrap4.min.css" />
     <title>Soluciones UN</title>
 </head>
 
@@ -98,7 +145,7 @@
                             <p class="content-color-secondary page-sub-title" style="margin-left : 20px">Realiza cotizaciones de  venta de Mercaderia</p>
                         </div>
                         <div class="col-auto">
-                            <input type="number" placeholder="# COTIZACION" id="cod-reimprimir" class="form-control" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="ENTER PARA DESCARGAR COTIZACION" />
+                            <input   type="text"  novalidate="true"  step="any" min="1" placeholder="# COTIZACION" id="cod-reimprimir" class="form-control" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="ENTER PARA DESCARGAR COTIZACION" />
                         </div>
                     </div>
                 </div>
@@ -178,7 +225,7 @@
                                         <div class="col-md-2">
                                             <input id="cantidadexistente" type="hidden" />
                                             <label for="cantidad">Cantidad:</label>
-                                            <input id="cantidad" type="number" class="form-control" placeholder="cantidad " autocomplete="off" />
+                                            <input id="cantidad"   type="text"  novalidate="true"  step="any" min="1" class="form-control"  onkeypress="return esNumInt(event,this)" onfocus="this.select();" placeholder="cantidad " autocomplete="off" />
                                             <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                             <div class="valid-feedback">¡Dato Correcto!</div>
                                         </div>
@@ -197,7 +244,7 @@
                                         </div>
                                         <div class="col-md-2">
                                             <label for="precio">Precio:</label>
-                                            <input id="precio" type="number" class="form-control" placeholder="Precio " autocomplete="off" disabled />
+                                            <input id="precio"   type="text"  novalidate="true"  step="0.01" min="1"  onkeypress="return esNumDeci(event,this)" onfocus="this.select();"  class="form-control" placeholder="Precio " autocomplete="off" disabled />
                                             <div class="invalid-feedback">¡Es necesario seleccionar un dato!</div>
                                             <div class="valid-feedback">¡Dato Correcto!</div>
                                             <br />
@@ -257,24 +304,25 @@
                                             <h5 class="modal-title text-center" id="exampleModalLabel">BUSQUEDA DE PRODUCTOS:</h5>
                                         </div>
                                         <div class="modal-body">
-                                            <form>
-                                                <div class="form-row">
-                                                    <div class="col-md-12">
-                                                        <table class="table table-striped table-bordered " id="tab-datos">
-                                                            <thead class="thead-dark">
-                                                                <tr>
-                                                                    <th>CODIGO</th>
-                                                                    <th>DESCRIPCION</th>
-                                                                    <th>EXCISTENCIA</th>
-                                                                    <th>ACCIONES</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody id="tbod-datos"></tbody>
-                                                        </table>
-                                                    </div>
+
+                                            <input class="form-control" id="busqueda" placeholder="DIGITE EL NOMBRE DEL PRODUCTO A BUSCAR" />
+                                            <br />
+                                            <div class="form-row">
+                                                <div class="col-md-12">
+                                                    <table class="table table-striped table-bordered " id="tab-datos">
+                                                        <thead class="thead-dark">
+                                                            <tr>
+                                                                <th>CODIGO</th>
+                                                                <th>DESCRIPCION</th>
+                                                                <th>EXISTENCIA</th>
+                                                                <th>ACCIONES</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="tbod-datos"></tbody>
+                                                    </table>
                                                 </div>
-                                                <br />
-                                            </form>
+                                            </div>
+                                            <br />
                                         </div>
                                         <div class="modal-footer" style="background-color:#fafafa">
                                             <button type="button" class="btn btn-danger" data-dismiss="modal" id="bt-cancelar"><i class="material-icons">clear</i>Cancelar</button>
